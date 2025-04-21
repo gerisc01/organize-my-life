@@ -59,7 +59,7 @@ export const deleteObject = async (type, object, subType, subObject) => {
     }
 
     try {
-        const response = await axios.delete(uri, object, options);
+        const response = await axios.delete(uri, options);
         return response.data;
     } catch (error) {
         throw error.response.data.message;

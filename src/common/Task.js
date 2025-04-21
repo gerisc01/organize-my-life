@@ -85,6 +85,52 @@ export const CreateTask = ({ onTaskCreate, onTaskClose }) => {
     )
 }
 
+// TODO: This and CreateTask should be merged into one component
+export const EditableTask = ({ onTaskUpdate, onTaskDelete, onTaskClose, task, disabled }) => {
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [newTaskText, setNewTaskText] = React.useState(task.name);
+    const checkmark = '✔️';
+    const xmark = '❌';
+    const pencil = '✏️';
+    const trash = '🗑️';
+
+    const handleTaskUpdate = () => {
+        onTaskUpdate(newTaskText);
+        onTaskClose();
+    };
+
+    const handleTaskDelete = () => {
+        onTaskDelete();
+        onTaskClose();
+    };
+
+    const handleTaskClose = () => {
+        setIsEditing(false);
+        setNewTaskText(task.name);
+        onTaskClose();
+    }
+
+    if (isEditing) {
+        return (
+            <View style={styles.newTask}>
+                <TextInput style={styles.newTaskInput} onChangeText={setNewTaskText} value={newTaskText} />
+                <Text style={styles.newTaskButton} onPress={() => handleTaskUpdate()}>{checkmark}</Text>
+                <Text style={styles.newTaskButton} onPress={() => handleTaskClose()}>{xmark}</Text>
+            </View>
+        );
+    } else {
+        return (
+            <View style={styles.newTask}>
+                <View style={styles.parentTaskNonEditable}>
+                    <Text>{task.name}</Text>
+                </View>
+                {!disabled && <Text style={styles.newTaskButton} onPress={() => setIsEditing(true)}>{pencil}</Text>}
+                {!disabled && <Text style={styles.newTaskButton} onPress={() => handleTaskDelete()}>{trash}</Text>}
+            </View>
+        );
+    }
+}
+
 const taskHeight = 40;
 
 const styles = StyleSheet.create({
@@ -92,6 +138,14 @@ const styles = StyleSheet.create({
         height: taskHeight,
     },
     disabledTask: {
+        borderWidth: 1,
+        borderColor: 'black',
+        borderStyle: 'solid',
+        backgroundColor: 'lightgrey',
+        height: taskHeight-15,
+    },
+    parentTaskNonEditable: {
+        flex: 1,
         borderWidth: 1,
         borderColor: 'black',
         borderStyle: 'solid',

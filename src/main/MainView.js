@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Category } from "../common/Category";
 import {
-    createTask,
+    createTask, deleteTask,
     getCategories,
     getCollection,
     getSavedPriorityCategories,
@@ -75,6 +75,40 @@ const MainView = () => {
         if (!parentTask) getCategories(collection).then(data => setCategories(data || {}));
     }
 
+    const editTask = async (taskId, newName) => {
+        const newTask = {...tasks[taskId], name: newName}
+        await updateTask(newTask);
+        getTasks(collection).then(data => setTasks(data || {}));
+    }
+
+    const removeTask = async (task) => {
+        if (selectedTasks.length > 0 && selectedTasks.includes(task.id)) {
+            // Remove the task from any parents
+            for (const taskId of Object.keys(tasks)) {
+                const selectedTask = tasks[taskId];
+                if (selectedTask && selectedTask.children) {
+                    if (selectedTask.children.includes(task.id)) {
+                        selectedTask.children = selectedTask.children.filter(childId => childId !== task.id);
+                        await updateTask(selectedTask);
+                    }
+                }
+            }
+            // Remove the task from the selected tasks
+            const newSelectedTasks = selectedTasks.filter(taskId => taskId !== task.id);
+            setSelectedTasks(newSelectedTasks);
+        }
+        // Remove the task from any categories
+        for (const categoryId of Object.keys(categories)) {
+            const category = categories[categoryId];
+            if (category && category.items && category.items.includes(task.id)) {
+                category.items = category.items.filter(taskId => taskId !== task.id);
+                await updateCategory(category);
+            }
+        }
+        await deleteTask(task);
+        getTasks(collection).then(data => setTasks(data || {}));
+    }
+
     const reorderTasks = async (id, fromIndex, toIndex) => {
         if (selectedTasks.length > 0) {
             const newTasks = {...tasks};
@@ -120,7 +154,10 @@ const MainView = () => {
             <View style={styles.homeScreen}>
                     <Category key={category.id} category={category} unselectTasks={unselectTasks}
                           tasks={getCurrentTasks(category.id)} parentTasks={parentTasks}
-                          selectTask={selectTask} reorderTasks={reorderTasks} addTask={(name) => addTask(category.id, name, lastParentId)}
+                          selectTask={selectTask} reorderTasks={reorderTasks}
+                              addTask={(name) => addTask(category.id, name, lastParentId)}
+                              editTask={(taskId, name) => editTask(taskId, name)}
+                              removeTask={(task) => removeTask(task)}
                     />
             </View>
         );
@@ -132,7 +169,10 @@ const MainView = () => {
                         const category = categories[categoryId];
                         if (!category) return null;
                         return (<Category key={categoryId} category={category} tasks={getCurrentTasks(category.id)}
-                                          selectTask={selectTask} reorderTasks={reorderTasks} addTask={(name) => addTask(categoryId, name)}
+                                          selectTask={selectTask} reorderTasks={reorderTasks}
+                                          addTask={(name) => addTask(categoryId, name)}
+                                          editTask={(taskId, name) => editTask(taskId, name)}
+                                          removeTask={(task) => removeTask(task)}
                         />);
                     })
                 }

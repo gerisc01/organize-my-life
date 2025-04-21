@@ -1,5 +1,5 @@
 import axios from "axios";
-import {loadObject, listCollectionItems, createObject, updateObject} from "./ListsApi";
+import {loadObject, listCollectionItems, createObject, updateObject, deleteObject} from "./ListsApi";
 
 // const tasks = {
 //     '1': {'id': '1', 'name': 'Make Organization Site', 'completed': false, 'children': ['5', '6', '7']},
@@ -44,6 +44,10 @@ export const createTask = async (task) => {
 
 export const updateTask = async (task) => {
     return await updateObject('items', task);
+}
+
+export const deleteTask = async (task) => {
+    return await deleteObject('items', task);
 }
 
 export const getCategories = async (collection) => {

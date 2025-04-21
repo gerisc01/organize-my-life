@@ -1,8 +1,8 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import {CreateTask, MoveableTask, Task} from "./Task";
+import {CreateTask, EditableTask, MoveableTask, Task} from "./Task";
 
-export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask }) => {
+export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask, editTask, removeTask }) => {
     const [startAdding, setStartAdding] = React.useState(false);
     const indexMoved = (originalIndex, movedBy) => {
         if (movedBy === 0) return;
@@ -13,7 +13,11 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
         <Text style={styles.categoryTitle}>{category?.name}</Text>
         <View style={styles.taskContainer}>
             {parentTasks?.map((parentTask, index) => (
-                <Task key={index+parentTask.name} disabled={true} task={parentTask} />
+                <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1} task={parentTask}
+                              onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
+                              onTaskDelete={() => removeTask(parentTask)}
+                              onTaskClose={() => setStartAdding(false)}
+                />
             ))}
             {tasks?.map((task, index) => (
                 <MoveableTask key={index+task.name} task={task}
