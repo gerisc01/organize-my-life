@@ -10,6 +10,7 @@ import {
     updateCategory,
     updateTask
 } from "../api/tasks";
+import BigGoals from "./BigGoals";
 
 const MainView = () => {
     const [tasks, setTasks] = useState({});
@@ -164,18 +165,23 @@ const MainView = () => {
     } else {
         return (
             <View style={styles.homeScreen}>
-                {
-                    priorities.map(categoryId => {
-                        const category = categories[categoryId];
-                        if (!category) return null;
-                        return (<Category key={categoryId} category={category} tasks={getCurrentTasks(category.id)}
-                                          selectTask={selectTask} reorderTasks={reorderTasks}
-                                          addTask={(name) => addTask(categoryId, name)}
-                                          editTask={(taskId, name) => editTask(taskId, name)}
-                                          removeTask={(task) => removeTask(task)}
-                        />);
-                    })
-                }
+                <View style={styles.bigGoals}>
+                    <BigGoals />
+                </View>
+                <View style={styles.mainInfo}>
+                    {
+                        priorities.map(categoryId => {
+                            const category = categories[categoryId];
+                            if (!category) return null;
+                            return (<Category key={categoryId} category={category} tasks={getCurrentTasks(category.id)}
+                                              selectTask={selectTask} reorderTasks={reorderTasks}
+                                              addTask={(name) => addTask(categoryId, name)}
+                                              editTask={(taskId, name) => editTask(taskId, name)}
+                                              removeTask={(task) => removeTask(task)}
+                            />);
+                        })
+                    }
+                </View>
             </View>
         );
     }
@@ -184,8 +190,19 @@ const MainView = () => {
 const styles = StyleSheet.create({
     homeScreen: {
         flex: 1,
-        flexDirection: 'row',
+        flexDirection: 'column',
     },
+    bigGoals: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: 'black',
+        margin: 10,
+    },
+    mainInfo: {
+        flex: 9,
+        padding: 10,
+        flexDirection: 'row',
+    }
 });
 
 export default MainView;
