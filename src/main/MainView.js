@@ -82,6 +82,12 @@ const MainView = () => {
         getTasks(collection).then(data => setTasks(data || {}));
     }
 
+    const toggleTaskCompletion = async (taskId) => {
+        const newTask = {...tasks[taskId], completed: !tasks[taskId].completed}
+        await updateTask(newTask);
+        getTasks(collection).then(data => setTasks(data || {}));
+    }
+
     const removeTask = async (task) => {
         if (selectedTasks.length > 0 && selectedTasks.includes(task.id)) {
             // Remove the task from any parents
@@ -159,6 +165,7 @@ const MainView = () => {
                               addTask={(name) => addTask(category.id, name, lastParentId)}
                               editTask={(taskId, name) => editTask(taskId, name)}
                               removeTask={(task) => removeTask(task)}
+                              toggleTaskCompletion={(taskId) => toggleTaskCompletion(taskId)}
                     />
             </View>
         );
@@ -178,6 +185,7 @@ const MainView = () => {
                                               addTask={(name) => addTask(categoryId, name)}
                                               editTask={(taskId, name) => editTask(taskId, name)}
                                               removeTask={(task) => removeTask(task)}
+                                              toggleTaskCompletion={(taskId) => toggleTaskCompletion(taskId)}
                             />);
                         })
                     }

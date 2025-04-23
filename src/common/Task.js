@@ -1,6 +1,6 @@
 import Animated, {useAnimatedStyle, useSharedValue, withSpring} from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Platform, StyleSheet, Text, TextInput, View } from "react-native";
+import {Platform, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 
 export const MoveableTask = ({ task, selectTask, unselectTasks, indexMoved }) => {
@@ -47,10 +47,18 @@ export const MoveableTask = ({ task, selectTask, unselectTasks, indexMoved }) =>
     return (
         <GestureDetector gesture={composedGesture}>
             <Animated.View style={[styles.moveableTaskContainer, animatedStyle]}>
-                <Task task={task} />
+                { task.completed ? <CompletedTask task={task} /> : <Task task={task} /> }
             </Animated.View>
         </GestureDetector>
     );
+}
+
+export const CompletedTask = ({ task }) => {
+    return (
+        <View style={styles.completedTask}>
+            <Text style={styles.completedTaskText}>{task.name}</Text>
+        </View>
+    )
 }
 
 export const Task = ({ task, disabled }) => {
@@ -131,6 +139,16 @@ export const EditableTask = ({ onTaskUpdate, onTaskDelete, onTaskClose, task, di
     }
 }
 
+export const TaskCompleteToggle = ({ task, toggleTaskCompletion }) => {
+    const style = task?.completed ? styles.uncompleteTaskButton : styles.completeTaskButton;
+    const text = task?.completed ? "Task Complete" : "Mark as Complete?";
+    return (
+        <Pressable style={style} onPress={() => toggleTaskCompletion(task.id)}>
+            <Text style={styles.completeTaskButtonText}>{text}</Text>
+        </Pressable>
+    )
+}
+
 const taskHeight = 40;
 
 const styles = StyleSheet.create({
@@ -158,6 +176,17 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
         height: taskHeight-15,
     },
+    completedTask: {
+        borderWidth: 1,
+        borderColor: 'black',
+        borderStyle: 'solid',
+        backgroundColor: '#f5f2f2',
+        height: taskHeight-15,
+    },
+    completedTaskText: {
+        textDecorationLine: 'line-through',
+        color: 'grey',
+    },
     newTask: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -178,5 +207,23 @@ const styles = StyleSheet.create({
                 cursor: 'pointer',
             },
         }),
+    },
+    completeTaskButton: {
+        borderWidth: 1,
+        borderColor: 'black',
+        borderStyle: 'solid',
+        backgroundColor: 'green',
+        height: taskHeight-15,
+    },
+    completeTaskButtonText: {
+        color: 'white',
+        textAlign: 'center',
+    },
+    uncompleteTaskButton: {
+        borderWidth: 1,
+        borderColor: 'black',
+        borderStyle: 'solid',
+        backgroundColor: 'red',
+        height: taskHeight-15,
     },
 });

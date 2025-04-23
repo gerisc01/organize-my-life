@@ -1,13 +1,21 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import {CreateTask, EditableTask, MoveableTask, Task} from "./Task";
+import { CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle} from "./Task";
 
-export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask, editTask, removeTask }) => {
+export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask, editTask, removeTask, toggleTaskCompletion }) => {
     const [startAdding, setStartAdding] = React.useState(false);
     const indexMoved = (originalIndex, movedBy) => {
         if (movedBy === 0) return;
         if (originalIndex + movedBy < 0 || originalIndex + movedBy >= tasks.length) return;
         reorderTasks(category.id, originalIndex, originalIndex + movedBy);
+    }
+    const allTasksCompleted = () => {
+        if (!tasks) return false;
+        return tasks.every(task => task.completed);
+    }
+    const getLastParentTask = () => {
+        if (!parentTasks || parentTasks.length === 0) return null;
+        return parentTasks[parentTasks.length - 1];
     }
     return (<View style={styles.category}>
         <Text style={styles.categoryTitle}>{category?.name}</Text>
@@ -25,6 +33,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
                               indexMoved={(movedBy) => indexMoved(index, movedBy)} />
             ))}
             {startAdding && <CreateTask onTaskCreate={(newText) => addTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
+            {allTasksCompleted() && parentTasks && !startAdding && <TaskCompleteToggle task={getLastParentTask()} toggleTaskCompletion={toggleTaskCompletion} />}
         </View>
         <View style={styles.backButtons}>
             <NavButton text="Back" onPress={() => unselectTasks(false)} disabled={!parentTasks} />
