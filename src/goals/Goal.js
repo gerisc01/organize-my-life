@@ -1,17 +1,23 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
+import {formatDate} from "./helpers";
+import {useState} from "react";
 
-export const GoalSummary = ({ goal }) => {
-    return (<View>
-        <Text>4/20/2025</Text>
-        <Text>Streak: 5 days</Text>
-        <Text>Description text</Text>
-        <Text>Footnotes</Text>
-    </View>)
+export const GoalSummary = ({ toggleDetails }) => {
+    const [summaryText, setSummaryText] = useState('Expand for Details');
+    const summaryPressed = () => {
+        toggleDetails();
+        setSummaryText(summaryText === 'Expand for Details' ? 'Collapse Details' : 'Expand for Details');
+    }
+    return (<Pressable style={styles.goalSummary} onPress={() => summaryPressed()}>
+        <Text style={styles.goalSummaryHeader}>{formatDate(new Date())}</Text>
+        <Text style={styles.goalSummaryText}>{summaryText}</Text>
+    </Pressable>)
 }
 
-export const Goal = ({ goal }) => {
+export const Goal = ({ goal, num }) => {
     return (<View style={styles.goal}>
-        <Text>{goal.name}</Text>
+        <Text style={styles.goalHeader}>Goal #{num}</Text>
+        <Text style={styles.goalText}>{goal.name}</Text>
     </View>)
 }
 
@@ -22,10 +28,30 @@ export const GoalEmpty = ({ addGoal }) => {
 }
 
 const styles = StyleSheet.create({
+    goalSummary: {
+        flex: 1,
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+    },
+    goalSummaryHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    goalSummaryText: {
+        fontSize: 14,
+        fontStyle: 'italic',
+    },
     goal: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
+    },
+    goalHeader: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    goalText: {
+        fontSize: 16,
     },
     emptyGoal: {
         flex: 1,

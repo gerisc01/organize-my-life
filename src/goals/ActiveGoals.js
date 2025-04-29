@@ -2,15 +2,15 @@ import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import {Goal, GoalEmpty, GoalSummary} from "./Goal";
 
-const ActiveGoals = ({ goals, addGoal }) => {
+const ActiveGoals = ({ goals, addGoal, toggleDetails }) => {
     return (<View style={styles.container}>
         <View style={styles.goalsSummary}>
-            <GoalSummary />
+            <GoalSummary toggleDetails={toggleDetails} />
         </View>
         {goals.map((goal, index) => (
             <View key={index} style={styles.goal}>
                 {goal
-                    ? <Goal goal={goal} />
+                    ? <Goal goal={goal} num={index+1} />
                     : <GoalEmpty addGoal={addGoal} />
                 }
             </View>
