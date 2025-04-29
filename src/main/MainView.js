@@ -7,6 +7,7 @@ import GoalsMainView from "../goals/GoalsMainView";
 const MainView = () => {
     const [collection, setCollection] = useState({});
     const [tasks, setTasks] = useState({});
+    const lastSelectedTask = React.useRef(null);
 
     useEffect(() => {
         getCollection().then(data => setCollection(data || {}));
@@ -20,12 +21,23 @@ const MainView = () => {
         getTasks(collection).then(data => setTasks(data || {}));
     }
 
+    const getLastSelectedTask = () => {
+        return tasks[lastSelectedTask.current] || null;
+    }
+
+    const onLastSelectedTaskChanged = (lastTaskId) => {
+        if (lastSelectedTask.current !== lastTaskId) {
+            lastSelectedTask.current = lastTaskId;
+        }
+    };
+
     return (<View style={styles.homeScreen}>
         <View style={styles.bigGoals}>
-            <GoalsMainView collection={collection} tasks={tasks} />
+            <GoalsMainView collection={collection} tasks={tasks} getLastSelectedTask={getLastSelectedTask} />
         </View>
         <View style={styles.mainInfo}>
-            <CategoryMainView collection={collection} tasks={tasks} refreshTasks={() => refreshTasks()} />
+            <CategoryMainView collection={collection} tasks={tasks}
+                      refreshTasks={() => refreshTasks()} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />
         </View>
     </View>)
 }

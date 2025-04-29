@@ -18,7 +18,7 @@ import {
     removeTaskFromAllParents, updateTaskCompletion
 } from "./helpers";
 
-const CategoryMainView = ({ collection, tasks, refreshTasks }) => {
+const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged }) => {
     const [categories, setCategories] = useState({});
     const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -36,6 +36,7 @@ const CategoryMainView = ({ collection, tasks, refreshTasks }) => {
         const newSelectedTasks = [...selectedTasks];
         newSelectedTasks.push(taskId);
         setSelectedTasks(newSelectedTasks);
+        onLastSelectedTaskChanged(taskId);
 
         setSelectedCategory(categoryId);
     }
@@ -44,6 +45,7 @@ const CategoryMainView = ({ collection, tasks, refreshTasks }) => {
         if (unselectAll) {
             setSelectedTasks([]);
             setSelectedCategory(null);
+            onLastSelectedTaskChanged(null);
         } else {
             const newSelectedTasks = [...selectedTasks];
             newSelectedTasks.pop();
@@ -51,6 +53,7 @@ const CategoryMainView = ({ collection, tasks, refreshTasks }) => {
             if (newSelectedTasks.length === 0) {
                 setSelectedCategory(null);
             }
+            onLastSelectedTaskChanged(getLastSelectedTask(newSelectedTasks, tasks));
         }
     }
 

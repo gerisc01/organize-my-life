@@ -1,33 +1,51 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React, {useEffect} from "react";
 import {Goal, GoalEmpty, GoalSummary} from "./Goal";
-import {getCategories, getCategory, getDefaultSelectedCategories} from "../api/helpers";
+import {addTaskToCategory, getCategories, getCategory, getDefaultSelectedCategories} from "../api/helpers";
 import ActiveGoals from "./ActiveGoals";
 
-const GoalsMainView = ({ collection, tasks }) => {
+const GoalsMainView = ({ collection, tasks, getLastSelectedTask }) => {
     const [goals, setGoals] = React.useState([]);
+    const [goalCategory, setGoalCategory] = React.useState(null);
 
     useEffect(() => {
         if (collection.id) {
-            getGoalIds(collection).then(goalIds => setGoals(padGoals(goalIds, 3)));
+            refreshGoals();
+            getGoalCategory().then(category => setGoalCategory(category));
         }
     }, [collection]);
 
-    const getGoalIds = async (collection) => {
-        const goalCategoryId = collection?.attributes?.big_goals;
-        if (goalCategoryId) {
-            const goalCategory = await getCategory(goalCategoryId);
-            if (goalCategory) return goalCategory.items || [];
-        }
-        return [];
+    const refreshGoals = () => {
+        getGoalCategory().then(category => {
+            setGoalCategory(category);
+            setGoals(padGoals(category?.items, 3));
+        });
+    }
+
+    const getGoalCategoryId = () => {
+        return collection?.attributes?.big_goals || null;
+    }
+
+    const getGoalCategory = async () => {
+        const goalCategoryId = getGoalCategoryId();
+        return goalCategoryId
+            ? await getCategory(goalCategoryId)
+            : null;
     }
 
     const getGoalTasks = () => {
         return goals.map((goalId) => tasks[goalId])
     }
 
+    const addGoal = () => {
+        if (!goals || goals.filter(id => id).length >= 3) return; // Limit to 3 big goals
+        const lastSelectedTask = getLastSelectedTask();
+        if (!lastSelectedTask) return;
+        addTaskToCategory(goalCategory, lastSelectedTask).then(_ => refreshGoals());
+    }
+
     return (<View style={styles.container}>
-        <ActiveGoals goals={getGoalTasks()} addGoal={() => console.log('Add goal pressed')} />
+        <ActiveGoals goals={getGoalTasks()} addGoal={addGoal} />
     </View>);
 }
 
