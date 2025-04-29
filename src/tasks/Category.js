@@ -2,7 +2,7 @@ import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import { CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle} from "./Task";
 
-export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask, editTask, removeTask, toggleTaskCompletion }) => {
+export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, newTask, editTask, deleteAndRemoveTask, toggleTaskCompletion }) => {
     const [startAdding, setStartAdding] = React.useState(false);
     const indexMoved = (originalIndex, movedBy) => {
         if (movedBy === 0) return;
@@ -23,7 +23,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
             {parentTasks?.map((parentTask, index) => (
                 <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1} task={parentTask}
                               onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
-                              onTaskDelete={() => removeTask(parentTask)}
+                              onTaskDelete={() => deleteAndRemoveTask(parentTask.id)}
                               onTaskClose={() => setStartAdding(false)}
                 />
             ))}
@@ -32,7 +32,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
                               selectTask={(taskId) => selectTask(category.id, taskId)}
                               indexMoved={(movedBy) => indexMoved(index, movedBy)} />
             ))}
-            {startAdding && <CreateTask onTaskCreate={(newText) => addTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
+            {startAdding && <CreateTask onTaskCreate={(newText) => newTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
             {allTasksCompleted() && parentTasks && !startAdding && <TaskCompleteToggle task={getLastParentTask()} toggleTaskCompletion={toggleTaskCompletion} />}
         </View>
         <View style={styles.backButtons}>

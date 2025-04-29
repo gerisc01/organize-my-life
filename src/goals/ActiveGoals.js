@@ -1,21 +1,20 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import {Goal, GoalSummary} from "../common/Goal";
+import {Goal, GoalEmpty, GoalSummary} from "./Goal";
 
-const BigGoals = ({  }) => {
+const ActiveGoals = ({ goals, addGoal }) => {
     return (<View style={styles.container}>
         <View style={styles.goalsSummary}>
             <GoalSummary />
         </View>
-        <View style={styles.goal}>
-            <Goal />
-        </View>
-        <View style={styles.goal}>
-            <Goal />
-        </View>
-        <View style={styles.goal}>
-            <Goal />
-        </View>
+        {goals.map((goal, index) => (
+            <View key={index} style={styles.goal}>
+                {goal
+                    ? <Goal goal={goal} />
+                    : <GoalEmpty addGoal={addGoal} />
+                }
+            </View>
+        ))}
     </View>);
 }
 
@@ -38,4 +37,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default BigGoals;
+export default ActiveGoals;
