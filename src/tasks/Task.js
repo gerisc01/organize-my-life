@@ -1,7 +1,8 @@
-import Animated, {useAnimatedStyle, useSharedValue, withSpring} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import {Platform, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import React from "react";
+import Checkbox from 'expo-checkbox';
 
 export const MoveableTask = ({ task, selectTask, unselectTasks, indexMoved }) => {
     const translateX = useSharedValue(0);
@@ -139,6 +140,14 @@ export const EditableTask = ({ onTaskUpdate, onTaskDelete, onTaskClose, task, di
     }
 }
 
+export const GoalTask = ({ task, toggleTaskCompletion }) => (
+    <View style={styles.simpleTask}>
+        <Checkbox style={styles.checkbox} value={task.completed} onValueChange={() => toggleTaskCompletion(task.id)} />
+        {task.completed && <Text style={styles.completedTaskText}>{task.name}</Text>}
+        {!task.completed && <Text>{task.name}</Text>}
+    </View>
+)
+
 export const TaskCompleteToggle = ({ task, toggleTaskCompletion }) => {
     const style = task?.completed ? styles.uncompleteTaskButton : styles.completeTaskButton;
     const text = task?.completed ? "Task Complete" : "Mark as Complete?";
@@ -207,6 +216,18 @@ const styles = StyleSheet.create({
                 cursor: 'pointer',
             },
         }),
+    },
+    simpleTask: {
+        borderBottomWidth: 1,
+        borderColor: 'black',
+        borderStyle: 'solid',
+        flexDirection: 'row',
+        height: taskHeight-15,
+        marginHorizontal: 10,
+        marginVertical: 5,
+    },
+    checkbox: {
+        marginRight: 5,
     },
     completeTaskButton: {
         borderWidth: 1,

@@ -4,6 +4,7 @@ import {getCategory} from "../api/helpers";
 import {getChildrenTasks, getLastSelectedTask, updateTaskCompletion} from "../tasks/helpers";
 import {Category} from "../tasks/Category";
 import {padGoals} from "./helpers";
+import {GoalNextSteps} from "./GoalNextSteps";
 
 const GoalsMainView = ({ collection, tasks, refreshTasks }) => {
     const [goals, setGoals] = React.useState([]);
@@ -39,24 +40,19 @@ const GoalsMainView = ({ collection, tasks, refreshTasks }) => {
         return goals.map((goalId) => tasks[goalId])
     }
 
-    const selectGoal = (goalIndex, taskId) => {
-        const newSelectedGoals = [...selectedGoals];
-        if (!newSelectedGoals[goalIndex].includes(taskId)) {
-            newSelectedGoals[goalIndex].push(taskId);
-        }
-        setSelectedGoals(newSelectedGoals);
-    }
+    const getParentTasksAndActionableGoals = (goal) => {
+        let parentTasks = [];
+        let actionableGoals = [];
 
-    const unselectGoals = (goalIndex, unselectAll) => {
-        if (unselectAll) {
-            const newSelectedGoals = [...selectedGoals];
-            newSelectedGoals[goalIndex] = [];
-            setSelectedGoals(newSelectedGoals);
-        } else {
-            const newSelectedGoals = [...selectedGoals];
-            newSelectedGoals[goalIndex].pop();
-            setSelectedGoals(newSelectedGoals);
+        let currentTask = goal;
+        while (currentTask?.children && currentTask.children.length > 0) {
+            actionableGoals = currentTask.children.map(childId => tasks[childId]);
+            parentTasks.push(currentTask);
+            let nextChild = currentTask.children.find(childId => !tasks[childId].completed);
+            currentTask = tasks[nextChild] || null;
         }
+
+        return [parentTasks, actionableGoals];
     }
 
     const toggleTaskCompletion = async (taskId) => {
@@ -64,26 +60,20 @@ const GoalsMainView = ({ collection, tasks, refreshTasks }) => {
         refreshTasks();
     }
 
-    const generateProps = (goalIndex, fakeCategory) => {
-        let parentTask = getLastSelectedTask(selectedGoals[goalIndex], tasks);
-        if (!parentTask) parentTask = tasks[goals[goalIndex]]
+    const generateProps = (goalIndex, goalTask) => {
+        const [parentTasks, actionableGoals] = getParentTasksAndActionableGoals(goalTask);
         return {
-            category: fakeCategory,
-            tasks: getChildrenTasks(parentTask, tasks),
-            parentTasks: parentTask ? selectedGoals[goalIndex].map(selectedId => tasks[selectedId]) : null,
-            selectTask: (_, taskId) => selectGoal(goalIndex, taskId),
-            unselectTasks: (unselectAll) => unselectGoals(goalIndex, unselectAll),
-            toggleTaskCompletion: (taskId) => toggleTaskCompletion(taskId)
+            goalTask: goalTask,
+            parentTasks: parentTasks,
+            tasks: actionableGoals,
         }
     }
 
     return (<View style={styles.container}>{
         goals.map((goalId, index) => {
-            console.log(goalId);
             const goalTask = tasks[goalId];
             if (!goalTask) return null;
-            const fakeCategory = {name: goalTask.name};
-            return (<Category key={goalTask.id} {...generateProps(index, fakeCategory)} />);
+            return (<GoalNextSteps key={goalTask.id} toggleTaskCompletion={toggleTaskCompletion} {...generateProps(index, goalTask)} />);
         })
     }</View>)
 }
