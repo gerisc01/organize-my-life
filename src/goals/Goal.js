@@ -17,7 +17,8 @@ export const GoalSummary = ({ toggleDetails }) => {
 export const Goal = ({ goal, num }) => {
     return (<View style={styles.goal}>
         <Text style={styles.goalHeader}>Goal #{num}</Text>
-        <Text style={styles.goalText}>{goal.name}</Text>
+        {goal.completed && <Text style={styles.completedGoalText}>{goal.name}</Text>}
+        {!goal.completed && <Text style={styles.goalText}>{goal.name}</Text>}
     </View>)
 }
 
@@ -52,6 +53,11 @@ const styles = StyleSheet.create({
     },
     goalText: {
         fontSize: 16,
+    },
+    completedGoalText: {
+        fontSize: 16,
+        textDecorationLine: 'line-through',
+        color: 'grey',
     },
     emptyGoal: {
         flex: 1,
