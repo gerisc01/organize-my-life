@@ -14,15 +14,18 @@ export const GoalNextSteps = ({ goalTask, parentTasks, tasks, toggleTaskCompleti
             ))}
         </View>
         <View style={styles.backButtons}>
+            <ActionButton text={goalTask.completed ? "Task Completed" : "Complete Task?"}
+                          onPress={() => toggleTaskCompletion(goalTask.id)} positive={!goalTask.completed} />
+            <ActionButton text="Remove Goal"
+                          onPress={() => toggleTaskCompletion(null)} disabled={false} positive={false} />
         </View>
     </View>);
 }
 
-const NavButton = ({ text, onPress, disabled }) => {
-    const disablePress = disabled || !onPress;
+const ActionButton = ({ text, onPress, disabled, positive }) => {
     return (
-        <Pressable onPress={onPress} disabled={disablePress} style={disablePress ? styles.navButtonDisabled : styles.navButton}>
-            <Text>{text}</Text>
+        <Pressable onPress={onPress} disabled={disabled} style={positive ? styles.navButton : styles.navButtonDisabled}>
+            <Text style={styles.navButtonText}>{text}</Text>
         </Pressable>
     );
 }
@@ -50,13 +53,14 @@ const styles = StyleSheet.create({
     },
     navButton: {
         flex: 1,
-        borderWidth: 1,
-        borderColor: 'black',
+        backgroundColor: 'green',
     },
     navButtonDisabled: {
         flex: 1,
-        backgroundColor: 'lightgrey',
-        borderWidth: 1,
-        borderColor: 'black',
+        backgroundColor: 'red',
+    },
+    navButtonText: {
+        color: 'white',
+        textAlign: 'center',
     },
 });
