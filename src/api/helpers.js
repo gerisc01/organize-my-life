@@ -80,6 +80,13 @@ export const addTaskToCategory = async (category, task) => {
     return await updateObject('lists', category);
 }
 
+export const removeTaskFromCategory = async (category, task) => {
+    if (!category || !task) throw new Error("Category or task is missing");
+    if (!category.items) category.items = [];
+    category.items = category.items.filter(itemId => itemId !== task.id);
+    return await updateObject('lists', category);
+}
+
 export const reorderCategoryItems = async (category, fromIndex, toIndex) => {
     const updatedCategory = { ...category };
     if (!updatedCategory.children) throw new Error("Cannot reorder tasks without items");

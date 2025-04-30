@@ -1,6 +1,6 @@
 import {StyleSheet, View} from "react-native";
 import React, {useEffect, useState} from "react";
-import {getCategory} from "../api/helpers";
+import {addTaskToCategory, getCategory, removeTaskFromCategory} from "../api/helpers";
 import {getChildrenTasks, getLastSelectedTask, updateTaskCompletion} from "../tasks/helpers";
 import {Category} from "../tasks/Category";
 import {padGoals} from "./helpers";
@@ -36,8 +36,9 @@ const GoalsMainView = ({ collection, tasks, refreshTasks }) => {
             : null;
     }
 
-    const getGoalTasks = () => {
-        return goals.map((goalId) => tasks[goalId])
+    const removeGoal = async (goal) => {
+        if (!goals) return;
+        await removeTaskFromCategory(goalCategory, goal).then(_ => refreshGoals());
     }
 
     const getParentTasksAndActionableGoals = (goal) => {
@@ -66,6 +67,7 @@ const GoalsMainView = ({ collection, tasks, refreshTasks }) => {
             goalTask: goalTask,
             parentTasks: parentTasks,
             tasks: actionableGoals,
+            removeGoal: () => removeGoal(goalTask),
         }
     }
 

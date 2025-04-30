@@ -2,7 +2,7 @@ import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import {EditableTask, GoalTask} from "../tasks/Task";
 
-export const GoalNextSteps = ({ goalTask, parentTasks, tasks, toggleTaskCompletion }) => {
+export const GoalNextSteps = ({ goalTask, parentTasks, tasks, removeGoal, toggleTaskCompletion }) => {
     return (<View style={styles.category}>
         <Text style={styles.categoryTitle}>{goalTask?.name}</Text>
         <View style={styles.taskContainer}>
@@ -17,7 +17,7 @@ export const GoalNextSteps = ({ goalTask, parentTasks, tasks, toggleTaskCompleti
             <ActionButton text={goalTask.completed ? "Task Completed" : "Complete Task?"}
                           onPress={() => toggleTaskCompletion(goalTask.id)} positive={!goalTask.completed} />
             <ActionButton text="Remove Goal"
-                          onPress={() => toggleTaskCompletion(null)} disabled={false} positive={false} />
+                          onPress={() => removeGoal()} disabled={false} positive={false} />
         </View>
     </View>);
 }
