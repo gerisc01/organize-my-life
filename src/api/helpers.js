@@ -89,10 +89,10 @@ export const removeTaskFromCategory = async (category, task) => {
 
 export const reorderCategoryItems = async (category, fromIndex, toIndex) => {
     const updatedCategory = { ...category };
-    if (!updatedCategory.children) throw new Error("Cannot reorder tasks without items");
+    if (!updatedCategory.items) throw new Error("Cannot reorder tasks without items");
     const movedTask = updatedCategory.items.splice(fromIndex, 1)[0];
     updatedCategory.items.splice(toIndex, 0, movedTask);
-    await updateTask(updatedCategory);
+    await updateObject('lists', updatedCategory);
 }
 
 

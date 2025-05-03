@@ -83,7 +83,8 @@ const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskC
             await reorderTaskChildren(getLastSelectedTask(selectedTasks, tasks), fromIndex, toIndex);
             refreshTasks();
         } else {
-            await reorderCategoryItems(id, fromIndex, toIndex);
+            const category = categories[id];
+            await reorderCategoryItems(category, fromIndex, toIndex);
             getCategories(collection).then(data => setCategories(data || {}));
         }
     }
