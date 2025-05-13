@@ -1,4 +1,4 @@
-import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {Pressable, ScrollView, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import { CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle} from "./Task";
 
@@ -19,7 +19,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
     }
     return (<View style={styles.category}>
         <Text style={styles.categoryTitle}>{category?.name}</Text>
-        <View style={styles.taskContainer}>
+        <ScrollView style={styles.taskScrollContainer} contentContainerStyle={styles.taskContainer}>
             {parentTasks?.map((parentTask, index) => (
                 <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1} task={parentTask}
                               onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
@@ -34,7 +34,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
             ))}
             {startAdding && <CreateTask onTaskCreate={(newText) => newTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
             {allTasksCompleted() && parentTasks && !startAdding && <TaskCompleteToggle task={getLastParentTask()} toggleTaskCompletion={toggleTaskCompletion} />}
-        </View>
+        </ScrollView>
         <View style={styles.backButtons}>
             <NavButton text="Back" onPress={() => unselectTasks(false)} disabled={!parentTasks} />
             <NavButton text="Home" onPress={() => unselectTasks(true)} disabled={!parentTasks} />
@@ -60,13 +60,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: 'center',
     },
-    taskContainer: {
+    taskScrollContainer: {
         flex: 1,
         borderWidth: 1,
         borderColor: 'black',
         padding: 5,
         marginHorizontal: 20,
         marginTop: 10,
+    },
+    taskContainer: {
+        flex: 1,
     },
     backButtons: {
         flexDirection: 'row',

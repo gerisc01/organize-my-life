@@ -1,6 +1,5 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React, {useEffect, useState} from "react";
-import { CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle} from "./Task";
 import {
     getCategories,
     getDefaultSelectedCategories,
