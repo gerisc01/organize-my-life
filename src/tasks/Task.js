@@ -54,6 +54,14 @@ export const MoveableTask = ({ task, selectTask, unselectTasks, indexMoved }) =>
     );
 }
 
+export const TaskContainer = ({ task }) => {
+    return (
+        <View style={styles.moveableTaskContainer}>
+            { task.completed ? <CompletedTask task={task} /> : <Task task={task} /> }
+        </View>
+    )
+}
+
 export const CompletedTask = ({ task }) => {
     return (
         <View style={styles.completedTask}>

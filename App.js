@@ -2,7 +2,6 @@ import React from 'react';
 import MainView from "./src/main/MainView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {SafeAreaView, StatusBar, useWindowDimensions} from "react-native";
-import TestDraggable from "./src/dnd/TestDraggable";
 
 const App = () => {
     const { width } = useWindowDimensions();

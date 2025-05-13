@@ -8,7 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 
-export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, onDragEnd }) => {
+export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, onTap, onDragEnd }) => {
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const isDragging = useSharedValue(false);
@@ -60,12 +60,11 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
 
             // Auto-scroll trigger zones: 50px from top/bottom edge
             if (scrollViewRef.current) {
-                scrollViewRef.current.measure((x, y, width, height, pageX, pageY) => {
-                    const touchY = pageY + event.absoluteY;
-
-                    if (touchY < pageY + 50) {
+                const touchY = event.absoluteY;
+                scrollViewRef.current.measureInWindow((x, y, width, height) => {
+                    if (touchY < y + 50) {
                         startAutoScroll("up");
-                    } else if (touchY > pageY + height - 50) {
+                    } else if (touchY > y + height - 50) {
                         startAutoScroll("down");
                     } else {
                         stopAutoScroll();
@@ -74,30 +73,32 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
             }
         })
         .onEnd((event) => {
-            scrollViewRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                const dropY = event.absoluteY - pageY + scrollY.value;
-                const dropIndex = Math.floor(dropY / itemHeight);
+            const scrollDuringDrag = scrollY.value - startScrollY.value;
+            const dropY = event.translationY + scrollDuringDrag;
+            const dropIndex = Math.floor(dropY / itemHeight);
 
-                if (onDragEnd) onDragEnd(dropIndex);
+            if (onDragEnd) onDragEnd(dropIndex);
 
-                translateX.value = withSpring(0);
-                translateY.value = withSpring(0);
-                isDragging.value = false;
-                stopAutoScroll();
-            });
+            translateX.value = withSpring(0);
+            translateY.value = withSpring(0);
+            isDragging.value = false;
+            stopAutoScroll();
         });
 
+    const tapGesture = Gesture.Tap()
+        .onEnd(() => {
+            if (!isDragging.value) {
+                if (onTap) onTap();
+            }
+        });
+
+    const composedGesture = Gesture.Simultaneous(tapGesture, panGesture);
+
     return (
-        <GestureDetector gesture={panGesture}>
-            <Animated.View style={[styles.itemContainer, animatedStyle]}>
+        <GestureDetector gesture={composedGesture}>
+            <Animated.View style={[animatedStyle]}>
                 {children}
             </Animated.View>
         </GestureDetector>
     );
 };
-
-const styles = StyleSheet.create({
-    itemContainer: {
-        marginVertical: 4,
-    },
-});
