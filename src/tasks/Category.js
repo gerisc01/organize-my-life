@@ -1,30 +1,52 @@
-import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {Pressable, ScrollView, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import {CreateTask, EditableTask, MoveableTask, Task} from "./Task";
+import {CompletedTask, CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle, TaskContainer} from "./Task";
+import {DraggableItem} from "../dnd/DraggableItem";
+import {DraggableList} from "../dnd/DraggableList";
 
-export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, addTask, editTask, removeTask }) => {
+export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, newTask, editTask, deleteAndRemoveTask, toggleTaskCompletion }) => {
     const [startAdding, setStartAdding] = React.useState(false);
     const indexMoved = (originalIndex, movedBy) => {
         if (movedBy === 0) return;
         if (originalIndex + movedBy < 0 || originalIndex + movedBy >= tasks.length) return;
         reorderTasks(category.id, originalIndex, originalIndex + movedBy);
     }
+    const allTasksCompleted = () => {
+        if (!tasks) return false;
+        return tasks.every(task => task.completed);
+    }
+    const getLastParentTask = () => {
+        if (!parentTasks || parentTasks.length === 0) return null;
+        return parentTasks[parentTasks.length - 1];
+    }
     return (<View style={styles.category}>
         <Text style={styles.categoryTitle}>{category?.name}</Text>
-        <View style={styles.taskContainer}>
+        <View style={styles.taskScrollContainer}>
             {parentTasks?.map((parentTask, index) => (
                 <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1} task={parentTask}
                               onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
-                              onTaskDelete={() => removeTask(parentTask)}
+                              onTaskDelete={() => deleteAndRemoveTask(parentTask.id)}
                               onTaskClose={() => setStartAdding(false)}
                 />
             ))}
-            {tasks?.map((task, index) => (
-                <MoveableTask key={index+task.name} task={task}
-                              selectTask={(taskId) => selectTask(category.id, taskId)}
-                              indexMoved={(movedBy) => indexMoved(index, movedBy)} />
-            ))}
-            {startAdding && <CreateTask onTaskCreate={(newText) => addTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
+            <DraggableList
+                data={tasks}
+                itemHeight={40}
+                renderItem={({ item, index, scrollViewRef, scrollY, itemHeight }) => (
+                    <DraggableItem
+                        key={item.id}
+                        scrollViewRef={scrollViewRef}
+                        scrollY={scrollY}
+                        itemHeight={itemHeight}
+                        onTap={() => selectTask(category.id, item.id)}
+                        onDragEnd={(movedBy) => indexMoved(index, movedBy)}
+                    >
+                        <TaskContainer task={item} />
+                    </DraggableItem>
+                )}
+            />
+            {startAdding && <CreateTask onTaskCreate={(newText) => newTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
+            {allTasksCompleted() && parentTasks && !startAdding && <TaskCompleteToggle task={getLastParentTask()} toggleTaskCompletion={toggleTaskCompletion} />}
         </View>
         <View style={styles.backButtons}>
             <NavButton text="Back" onPress={() => unselectTasks(false)} disabled={!parentTasks} />
@@ -51,13 +73,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: 'center',
     },
-    taskContainer: {
+    taskScrollContainer: {
         flex: 1,
         borderWidth: 1,
         borderColor: 'black',
         padding: 5,
         marginHorizontal: 20,
         marginTop: 10,
+    },
+    taskContainer: {
+        flex: 1,
     },
     backButtons: {
         flexDirection: 'row',
