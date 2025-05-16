@@ -1,17 +1,22 @@
 import axios from 'axios';
+import {getSessionApiKey} from "../login/Auth";
 
-const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 const serverLocation = process.env.EXPO_PUBLIC_API_URL;
-const options = {
-    headers: {
-        'ACCOUNT_ID': apiKey
+
+const defaultHeaders = async() => {
+    const apiKey = await getSessionApiKey();
+    return {
+        headers: {
+            'ACCOUNT_ID': apiKey
+        }
     }
 }
 
 export const listObjects = async (type) => {
     try {
         const uri = `${serverLocation}/api/${type}`;
-        const response =  await axios.get(uri, options);
+        const headers = await defaultHeaders();
+        const response =  await axios.get(uri, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -21,7 +26,8 @@ export const listObjects = async (type) => {
 export const loadObject = async (type, id) => {
     try {
         const uri = `${serverLocation}/api/${type}/${id}`;
-        const response =  await axios.get(uri, options);
+        const headers = await defaultHeaders();
+        const response =  await axios.get(uri, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -31,7 +37,8 @@ export const loadObject = async (type, id) => {
 export const createObject = async (type, object) => {
     try {
         const uri = `${serverLocation}/api/${type}`;
-        const response = await axios.post(uri, object, options);
+        const headers = await defaultHeaders();
+        const response = await axios.post(uri, object, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -41,7 +48,8 @@ export const createObject = async (type, object) => {
 export const updateObject = async (type, object) => {
     try {
         const uri = `${serverLocation}/api/${type}/${object.id}`;
-        const response = await axios.put(uri, object, options);
+        const headers = await defaultHeaders();
+        const response = await axios.put(uri, object, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -59,7 +67,8 @@ export const deleteObject = async (type, object, subType, subObject) => {
     }
 
     try {
-        const response = await axios.delete(uri, options);
+        const headers = await defaultHeaders();
+        const response = await axios.delete(uri, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -69,7 +78,8 @@ export const deleteObject = async (type, object, subType, subObject) => {
 export const executeAction = async (actionId, body) => {
     const uri = `${serverLocation}/api/actions/${actionId}`;
     try {
-        const response = await axios.post(uri, body, options);
+        const headers = await defaultHeaders();
+        const response = await axios.post(uri, body, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -79,7 +89,8 @@ export const executeAction = async (actionId, body) => {
 export const executeAdHocAction = async (actionId, body) => {
     const uri = `${serverLocation}/api/actions/ad-hoc/${actionId}`;
     try {
-        const response = await axios.post(uri, body, options);
+        const headers = await defaultHeaders();
+        const response = await axios.post(uri, body, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;
@@ -89,7 +100,8 @@ export const executeAdHocAction = async (actionId, body) => {
 export const listCollectionItems = async (id) => {
     const uri = `${serverLocation}/api/collections/${id}/listItems`;
     try {
-        const response = await axios.get(uri, options);
+        const headers = await defaultHeaders();
+        const response = await axios.get(uri, headers);
         return response.data;
     } catch (error) {
         throw error.response.data.message;

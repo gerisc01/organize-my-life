@@ -1,0 +1,19 @@
+{
+  "id": "basic-todo",
+  "key": "basic-todo",
+  "display_name": "Basic Todo",
+  "fields": [
+    {
+      "key": "name",
+      "display_name": "Name",
+      "type": "String",
+      "required": true
+    },
+    {
+      "key": "completed",
+      "display_name": "Completed",
+      "type": "SchemaType::Boolean",
+      "required": false
+    }
+  ]
+}

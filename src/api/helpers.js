@@ -1,15 +1,6 @@
 import axios from "axios";
 import {loadObject, listCollectionItems, createObject, updateObject, deleteObject} from "./ListsApi";
-
-// const tasks = {
-//     '1': {'id': '1', 'name': 'Make Organization Site', 'completed': false, 'children': ['5', '6', '7']},
-//     '2': {'id': '2', 'name': 'Make Personal Site', 'completed': false},
-//     '3': {'id': '3', 'name': 'Finish Scoreboard', 'completed': false},
-//     '4': {'id': '4', 'name': 'Sayonara Wild Hearts', 'completed': false},
-//     '5': {'id': '5', 'name': 'Make Front End Components', 'completed': false},
-//     '6': {'id': '6', 'name': 'Build API', 'completed': false},
-//     '7': {'id': '7', 'name': 'Release to Raspberry Pi', 'completed': false},
-// };
+import {getSessionApiKey} from '../login/Auth'
 
 /******************************************************************************
  Collections
@@ -18,7 +9,7 @@ import {loadObject, listCollectionItems, createObject, updateObject, deleteObjec
 export const getCollection = async () => {
     // Fetch the account and then get the collection based on the id
     // stored in that account response.
-    const apiKey = process.env.EXPO_PUBLIC_API_KEY;
+    const apiKey = await getSessionApiKey();
     try {
         const accountResp = await loadObject('accounts', apiKey);
         const collections = accountResp?.collections;

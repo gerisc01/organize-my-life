@@ -1,0 +1,17 @@
+{
+  "name": "scott.gerike - Organize My Life",
+  "lists": [
+    "e1610bf7-b9c3-4a20-be5c-acc5413c1938",
+    "19517235-1d0c-483a-8928-ea9413a86991",
+    "71e9fbc6-96d5-4f93-992d-c868ecb52dd3",
+    "3c610ca0-be12-4cce-8cca-97b985951b0b",
+    "651e0117-3e22-4f09-ae1f-49d5804458e8"
+  ],
+  "id": "65d6e46f-da97-4db4-a547-76fa4c927c48",
+  "templates": [
+    "basic-todo"
+  ],
+  "attributes": {
+    "big_goals": "cea253c5-485d-4c4f-acfc-842ceae74d0a"
+  }
+}
