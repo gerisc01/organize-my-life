@@ -2,11 +2,28 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Pressable, Text } from 'react-native';
 import { setCredentials } from './Auth';
 import {loadObject} from "../api/ListsApi";
+import axios from "axios";
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    const getAccount = async (id) => {
+        try {
+            const serverLocation = process.env.EXPO_PUBLIC_API_URL;
+            const uri = `${serverLocation}/api/accounts/${id}`;
+            const headers = {
+                headers: {
+                    'ACCOUNT_ID': id
+                }
+            };
+            const response =  await axios.get(uri, headers);
+            return response.data;
+        } catch (error) {
+            throw error.response.data.message;
+        }
+    }
 
     const handleLogin = async () => {
         try {
@@ -16,7 +33,7 @@ const Login = ({ onLogin }) => {
             }
 
             // Validate credentials
-            const accountResp = await loadObject('accounts', password);
+            const accountResp = await getAccount(password);
             if (!accountResp || !accountResp.id || accountResp.id !== password) {
                 setError('Invalid username or password');
                 return;
