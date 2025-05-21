@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getCollection, getTasks } from "../api/helpers";
-import CategoryMainView from "../tasks/CategoryMainView";
+import CategoryView from "../tasks/CategoryView";
 import GoalsHeaderView from "../goals/GoalsHeaderView";
-import GoalsMainView from "../goals/GoalsMainView";
+import GoalsView from "../goals/GoalsView";
+import {useSharedValue} from "react-native-reanimated";
 
 const MainView = () => {
     const [collection, setCollection] = useState({});
     const [tasks, setTasks] = useState({});
     const [mainContentView, setMainContentView] = useState('tasks');
-    const lastSelectedTask = React.useRef(null);
+    const lastSelectedTask = useSharedValue(null);
 
     useEffect(() => {
         getCollection().then(data => setCollection(data || {}));
@@ -24,12 +25,12 @@ const MainView = () => {
     }
 
     const getLastSelectedTask = () => {
-        return tasks[lastSelectedTask.current] || null;
+        return tasks[lastSelectedTask.value] || null;
     }
 
     const onLastSelectedTaskChanged = (lastTaskId) => {
-        if (lastSelectedTask.current !== lastTaskId) {
-            lastSelectedTask.current = lastTaskId;
+        if (lastSelectedTask.value !== lastTaskId) {
+            lastSelectedTask.value = lastTaskId;
         }
     };
 
@@ -42,9 +43,9 @@ const MainView = () => {
             <GoalsHeaderView collection={collection} tasks={tasks} toggleGoalDetails={toggleMainContent} getLastSelectedTask={getLastSelectedTask} />
         </View>
         <View style={styles.mainInfo}>
-            {mainContentView === 'goals' && <GoalsMainView collection={collection} tasks={tasks} refreshTasks={() => refreshTasks()} />}
-            {mainContentView === 'tasks' && <CategoryMainView collection={collection} tasks={tasks}
-                      refreshTasks={() => refreshTasks()} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />}
+            {mainContentView === 'goals' && <GoalsView collection={collection} tasks={tasks} refreshTasks={() => refreshTasks()} />}
+            {mainContentView === 'tasks' && <CategoryView collection={collection} tasks={tasks}
+                                                          refreshTasks={() => refreshTasks()} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />}
         </View>
     </View>)
 }

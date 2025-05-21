@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import MainView from "./src/main/MainView";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import {SafeAreaView, StatusBar, useWindowDimensions} from "react-native";
+import { StatusBar, useWindowDimensions } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { isSessionLoggedIn } from "./src/login/Auth";
 import Login from "./src/login/Login";
+import PhoneView from "./src/main/PhoneView";
 
 const App = () => {
     const { width } = useWindowDimensions();
@@ -20,12 +22,14 @@ const App = () => {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={{ flex: 1 }}>
+            <SafeAreaProvider>
                 <StatusBar style="auto" />
-                {isLoggedIn === true && phone && <PhoneView />}
-                {isLoggedIn === true && !phone && <MainView />}
-                {isLoggedIn === false && <Login onLogin={() => setIsLoggedIn(true)}/>}
-            </SafeAreaView>
+                <SafeAreaView style={{ flex: 1 }}>
+                    {isLoggedIn === true && phone && <PhoneView />}
+                    {isLoggedIn === true && !phone && <MainView />}
+                    {isLoggedIn === false && <Login onLogin={() => setIsLoggedIn(true)}/>}
+                </SafeAreaView>
+            </SafeAreaProvider>
         </GestureHandlerRootView>
     );
 }

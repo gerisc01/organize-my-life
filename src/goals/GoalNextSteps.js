@@ -2,9 +2,11 @@ import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import {EditableTask, GoalTask} from "../tasks/Task";
 
-export const GoalNextSteps = ({ goalTask, parentTasks, tasks, removeGoal, toggleTaskCompletion }) => {
+export const GoalNextSteps = ({ goalTask, parentTasks, tasks, unselectGoal, removeGoal, toggleTaskCompletion }) => {
     return (<View style={styles.category}>
-        <Text style={styles.categoryTitle}>{goalTask?.name}</Text>
+        <Pressable disabled={!unselectGoal} onPress={() => unselectGoal()}>
+            <Text style={styles.categoryTitle}>{goalTask?.name}</Text>
+        </Pressable>
         <View style={styles.taskContainer}>
             {parentTasks?.map((parentTask, index) => (
                 <EditableTask key={index+parentTask.name} disabled={true} task={parentTask} />

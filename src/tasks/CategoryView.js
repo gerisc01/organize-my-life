@@ -17,7 +17,7 @@ import {
     removeTaskFromAllParents, updateTaskCompletion
 } from "./helpers";
 
-const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged }) => {
+const CategoryView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged, phoneView, readOnly }) => {
     const [categories, setCategories] = useState({});
     const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -96,6 +96,7 @@ const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskC
     const generateProps = (category) => {
         const parentTask = getLastSelectedTask(selectedTasks, tasks);
         return {
+            readOnly: !!readOnly,
             category: category,
             tasks: parentTask ? getChildrenTasks(parentTask, tasks) : getCategoryTasks(category, tasks),
             parentTasks: parentTask ? selectedTasks.map(selectedId => tasks[selectedId]) : null,
@@ -105,10 +106,21 @@ const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskC
             newTask: (name) => newTask(category.id, name),
             editTask: (taskId, name) => editTask(taskId, name),
             deleteAndRemoveTask: (taskId) => deleteTask(taskId),
-            toggleTaskCompletion: (taskId) => toggleTaskCompletion(taskId)
+            toggleTaskCompletion: (taskId) => toggleTaskCompletion(taskId),
+            selectCategory: (categoryId) => setSelectedCategory(categoryId),
         }
     }
 
+    if (phoneView) {
+        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory} selectCategory={setSelectedCategory}
+                                 selectedTasks={selectedTasks} generateProps={generateProps} />
+    } else {
+        return <CategoryMainView categories={categories} selectedCategory={selectedCategory} selectedCategories={selectedCategories}
+            selectedTasks={selectedTasks} generateProps={generateProps} />
+    }
+}
+
+const CategoryMainView = ({ categories, selectedCategory, selectedCategories, selectedTasks, generateProps }) => {
     if (selectedTasks?.length > 0) {
         const category = categories[selectedCategory];
         if (!category) return null;
@@ -126,13 +138,53 @@ const CategoryMainView = ({ collection, tasks, refreshTasks, onLastSelectedTaskC
     }
 }
 
+const CategoryPhoneView = ({ categories, selectCategory, selectedCategory, selectedTasks, generateProps }) => {
+    const category = categories[selectedCategory];
+    if (!category) {
+        return (<CategorySelector categories={categories} selectCategory={selectCategory} />)
+    } else {
+        return (<View style={styles.container}>
+            <Category key={category.id} {...generateProps(category)} />
+        </View>)
+    }
+}
+
+const CategorySelector = ({ categories, selectCategory }) => {
+    return (<View style={styles.selectorContainer}>
+        {Object.keys(categories).map((categoryId) => {
+            return (
+                <Pressable style={styles.categoryButton} key={categoryId} onPress={() => selectCategory(categoryId)}>
+                    <Text style={styles.defaultText}>{categories[categoryId]?.name}</Text>
+                </Pressable>
+            )
+        })}
+    </View>)
+}
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
         flexDirection: 'row',
+    },
+    selectorContainer: {
+        flex: 1,
+        padding: 10,
+        flexDirection: 'column',
+    },
+    categoryButton: {
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'black',
+        margin: 5,
+        borderRadius: 5,
+        backgroundColor: 'white',
+    },
+    defaultText: {
+        color: 'black',
+        fontSize: 20,
     }
 });
 
 
-export default CategoryMainView;
+export default CategoryView;

@@ -4,10 +4,10 @@ import {CompletedTask, CreateTask, EditableTask, MoveableTask, Task, TaskComplet
 import {DraggableItem} from "../dnd/DraggableItem";
 import {DraggableList} from "../dnd/DraggableList";
 
-export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, newTask, editTask, deleteAndRemoveTask, toggleTaskCompletion }) => {
+export const Category = ({ readOnly, category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, newTask, editTask, deleteAndRemoveTask, toggleTaskCompletion, selectCategory }) => {
     const [startAdding, setStartAdding] = React.useState(false);
     const indexMoved = (originalIndex, movedBy) => {
-        if (movedBy === 0) return;
+        if (movedBy === 0 || readOnly) return;
         if (originalIndex + movedBy < 0 || originalIndex + movedBy >= tasks.length) return;
         reorderTasks(category.id, originalIndex, originalIndex + movedBy);
     }
@@ -20,10 +20,12 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
         return parentTasks[parentTasks.length - 1];
     }
     return (<View style={styles.category}>
-        <Text style={styles.categoryTitle}>{category?.name}</Text>
+        <Pressable onPress={() => selectCategory(null)}>
+            <Text style={styles.categoryTitle}>{category?.name}</Text>
+        </Pressable>
         <View style={styles.taskScrollContainer}>
             {parentTasks?.map((parentTask, index) => (
-                <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1} task={parentTask}
+                <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1 || readOnly} task={parentTask}
                               onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
                               onTaskDelete={() => deleteAndRemoveTask(parentTask.id)}
                               onTaskClose={() => setStartAdding(false)}
@@ -51,7 +53,7 @@ export const Category = ({ category, parentTasks, tasks, reorderTasks, selectTas
         <View style={styles.backButtons}>
             <NavButton text="Back" onPress={() => unselectTasks(false)} disabled={!parentTasks} />
             <NavButton text="Home" onPress={() => unselectTasks(true)} disabled={!parentTasks} />
-            <NavButton text="Add" onPress={() => setStartAdding(!startAdding)} />
+            <NavButton text="Add" onPress={() => setStartAdding(!startAdding)} disabled={readOnly} />
         </View>
     </View>);
 }

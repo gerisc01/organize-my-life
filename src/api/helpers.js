@@ -67,14 +67,15 @@ export const updateCategory = async (category) => {
 export const addTaskToCategory = async (category, task) => {
     if (!category || !task) throw new Error("Category or task is missing");
     if (!category.items) category.items = [];
-    category.items.push(task.id);
+    if (category.items.includes(task.id)) throw new Error("Task already exists in category");
+    category.items = [...category.items, task.id];
     return await updateObject('lists', category);
 }
 
 export const removeTaskFromCategory = async (category, task) => {
     if (!category || !task) throw new Error("Category or task is missing");
     if (!category.items) category.items = [];
-    category.items = category.items.filter(itemId => itemId !== task.id);
+    category.items = [...category.items].filter(itemId => itemId !== task.id);
     return await updateObject('lists', category);
 }
 
