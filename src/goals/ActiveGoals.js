@@ -11,7 +11,7 @@ const ActiveGoals = ({ goals, addGoal, toggleDetails }) => {
             <View key={index} style={styles.goal}>
                 {goal
                     ? <Goal goal={goal} num={index+1} />
-                    : <GoalEmpty addGoal={addGoal} />
+                    : <GoalEmpty />
                 }
             </View>
         ))}

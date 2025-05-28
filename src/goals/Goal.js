@@ -22,10 +22,11 @@ export const Goal = ({ goal, num }) => {
     </View>)
 }
 
-export const GoalEmpty = ({ addGoal }) => {
-    return (<Pressable style={styles.emptyGoal} onPress={() => addGoal()}>
-        <Text>Press to add focused goal</Text>
-    </Pressable>)
+export const GoalEmpty = ({ }) => {
+    return (<View style={styles.emptyGoal}>
+        <Text style={styles.goalText}>No Goal</Text>
+        <Text style={styles.goalSummaryText}>Add in Details</Text>
+    </View>)
 }
 
 const styles = StyleSheet.create({
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     },
     emptyGoal: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
     },
 });

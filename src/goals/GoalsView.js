@@ -1,5 +1,5 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {addTaskToCategory, getCategory, removeTaskFromCategory} from "../api/helpers";
 import {getChildrenTasks, getLastSelectedTask, updateTaskCompletion} from "../tasks/helpers";
 import {Category} from "../tasks/Category";
@@ -7,37 +7,17 @@ import {padGoals} from "./helpers";
 import {GoalNextSteps} from "./GoalNextSteps";
 import CategoryView from "../tasks/CategoryView";
 
-const GoalsView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged, getLastSelectedTask, phoneView }) => {
+const GoalsView = ({ collection, tasks, goalCategory, refreshGoals, refreshTasks, phoneView }) => {
     const [goals, setGoals] = useState([]);
-    const [goalCategory, setGoalCategory] = useState(null);
     const [selectedGoal, setSelectedGoal] = useState(null);
     const [selectingNewGoal, setSelectingNewGoal] = useState(false);
 
     useEffect(() => {
-        if (collection.id) {
-            refreshGoals();
-            getGoalCategory().then(category => setGoalCategory(category));
-        }
-    }, [collection]);
-
-    const refreshGoals = () => {
-        getGoalCategory().then(category => {
-            setGoalCategory(category);
-            const currentGoals = [...category?.items] || [];
+        if (goalCategory) {
+            const currentGoals = [...goalCategory?.items] || [];
             setGoals(padGoals(currentGoals, 3));
-        });
-    }
-
-    const getGoalCategoryId = () => {
-        return collection?.attributes?.big_goals || null;
-    }
-
-    const getGoalCategory = async () => {
-        const goalCategoryId = getGoalCategoryId();
-        return goalCategoryId
-            ? await getCategory(goalCategoryId)
-            : null;
-    }
+        }
+    }, [goalCategory]);
 
     const removeGoal = async (goal) => {
         if (!goals) return;
@@ -46,11 +26,10 @@ const GoalsView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged,
             .then(_ => setSelectedGoal(null));
     }
 
-    const addGoal = () => {
+    const addGoal = (selectedTask) => {
         if (!goals || goals.filter(id => id).length >= 3) return; // Limit to 3 big goals
-        const lastSelectedTask = getLastSelectedTask();
-        if (!lastSelectedTask) return;
-        addTaskToCategory(goalCategory, lastSelectedTask)
+        if (!selectedTask) return;
+        addTaskToCategory(goalCategory, selectedTask)
             .then(_ => refreshGoals())
             .then(_ => setSelectingNewGoal(false));
     }
@@ -86,16 +65,16 @@ const GoalsView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged,
         }
     }
 
-    if (phoneView && selectingNewGoal) {
+    if (selectingNewGoal) {
         return <GoalAddNew collection={collection} tasks={tasks} refreshTasks={refreshTasks} addGoal={addGoal}
-            setSelectingNewGoal={setSelectingNewGoal} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />
+            setSelectingNewGoal={setSelectingNewGoal} />
     } else if (phoneView && !selectedGoal) {
         return <GoalSelector tasks={tasks} goalIds={goals} selectGoal={setSelectedGoal} setSelectingNewGoal={setSelectingNewGoal} />
     } else if (phoneView && selectedGoal) {
         const goalTask = tasks[selectedGoal];
         return <GoalNextSteps key={selectedGoal} unselectGoal={() => setSelectedGoal(null)} {...generateProps(null, goalTask)} />
     } else {
-        return <GoalsMainView goals={goals} tasks={tasks} generateProps={generateProps}  />
+        return <GoalsMainView goals={goals} tasks={tasks} setSelectingNewGoal={setSelectingNewGoal} generateProps={generateProps}  />
     }
 }
 
@@ -120,29 +99,41 @@ const GoalSelector = ({ tasks, goalIds, selectGoal, setSelectingNewGoal }) => {
     </View>)
 }
 
-const GoalAddNew = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged, addGoal, setSelectingNewGoal }) => {
+const GoalAddNew = ({ collection, tasks, refreshTasks, addGoal, setSelectingNewGoal }) => {
+    const currentTaskRef = useRef(null);
     return (<View style={styles.selectorContainer}>
         <Pressable onPress={() => setSelectingNewGoal(false)}>
             <Text style={styles.selectorHeader}>Select a new goal</Text>
         </Pressable>
         <Separator />
         <CategoryView phoneView={true} readOnly={true} collection={collection} tasks={tasks}
-                      refreshTasks={refreshTasks} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />
+                      currentTaskRef={currentTaskRef} refreshTasks={refreshTasks} />
         <Separator />
-        <Pressable onPress={() => addGoal()}>
+        <Pressable onPress={() => addGoal(currentTaskRef.current)}>
             <Text style={styles.addGoalButton}>Add goal</Text>
         </Pressable>
     </View>)
 }
 
-const GoalsMainView = ({ goals, tasks, generateProps }) => {
+const GoalsMainView = ({ goals, tasks, setSelectingNewGoal, generateProps }) => {
     return (<View style={styles.container}>{
         goals.map((goalId, index) => {
             const goalTask = tasks[goalId];
-            if (!goalTask) return null;
-            return (<GoalNextSteps key={goalTask.id} {...generateProps(index, goalTask)} />);
+            if (goalTask) {
+                return (<GoalNextSteps key={goalTask.id} {...generateProps(index, goalTask)} />);
+            } else {
+                return <GoalPlusButton key={`empty${index}`} onPress={() => setSelectingNewGoal(true)} />
+            }
         })
     }</View>)
+}
+
+const GoalPlusButton = ({ onPress }) => {
+    return (
+        <Pressable onPress={onPress} style={styles.goalPlusButton}>
+            <Text style={styles.goalPlusButtonText}>+</Text>
+        </Pressable>
+    );
 }
 
 export const Separator = () => {
@@ -186,6 +177,22 @@ const styles = StyleSheet.create({
         margin: 5,
         borderRadius: 5,
         backgroundColor: 'lightgreen',
+    },
+    goalPlusButton: {
+        height: '50%',
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'black',
+        margin: 5,
+        borderRadius: 5,
+        backgroundColor: 'lightgreen',
+        alignSelf: 'center',
+        justifyContent: 'center',
+    },
+    goalPlusButtonText: {
+        fontColor: 'grey',
+        fontWeight: 'bold',
+        fontSize: 20
     },
     separator: {
         borderBottomColor: 'black',

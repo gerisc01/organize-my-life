@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
-    withSpring,
+    withSpring, runOnJS,
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 
@@ -12,7 +12,7 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const isDragging = useSharedValue(false);
-    const scrollInterval = useRef(null);
+    const scrollInterval = useSharedValue(null);
     const startScrollY = useSharedValue(0);
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -23,8 +23,8 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
     }));
 
     const startAutoScroll = (direction) => {
-        if (scrollInterval.current) return;
-        scrollInterval.current = setInterval(() => {
+        if (scrollInterval.value) return;
+        scrollInterval.value = setInterval(() => {
             if (scrollViewRef.current) {
                 const newY =
                     direction === "up"
@@ -40,9 +40,9 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
     };
 
     const stopAutoScroll = () => {
-        if (scrollInterval.current) {
-            clearInterval(scrollInterval.current);
-            scrollInterval.current = null;
+        if (scrollInterval.value) {
+            clearInterval(scrollInterval.value);
+            scrollInterval.value = null;
         }
     };
 
@@ -77,18 +77,18 @@ export const DraggableItem = ({ children, scrollViewRef, scrollY, itemHeight, on
             const dropY = event.translationY + scrollDuringDrag;
             const dropIndex = Math.floor(dropY / itemHeight);
 
-            if (onDragEnd) onDragEnd(dropIndex);
+            if (onDragEnd) runOnJS(onDragEnd)(dropIndex);
 
             translateX.value = withSpring(0);
             translateY.value = withSpring(0);
             isDragging.value = false;
-            stopAutoScroll();
+            runOnJS(stopAutoScroll)();
         });
 
     const tapGesture = Gesture.Tap()
         .onEnd(() => {
             if (!isDragging.value) {
-                if (onTap) onTap();
+                if (onTap) runOnJS(onTap)();
             }
         });
 

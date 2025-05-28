@@ -5,48 +5,19 @@ import {addTaskToCategory, getCategories, getCategory, getDefaultSelectedCategor
 import ActiveGoals from "./ActiveGoals";
 import {padGoals} from "./helpers";
 
-const GoalsHeaderView = ({ collection, tasks, toggleGoalDetails, getLastSelectedTask }) => {
-    const [goals, setGoals] = React.useState([]);
-    const [goalCategory, setGoalCategory] = React.useState(null);
+const GoalsHeaderView = ({ collection, tasks, goalCategory, toggleGoalDetails }) => {
+    const [goalTasks, setGoalTasks] = React.useState([]);
 
     useEffect(() => {
         if (collection.id) {
-            refreshGoals();
-            getGoalCategory().then(category => setGoalCategory(category));
+            let currentGoals = [...goalCategory?.items] || [];
+            currentGoals = currentGoals.map((goalId) => tasks[goalId]);
+            setGoalTasks(padGoals(currentGoals, 3));
         }
-    }, [collection]);
-
-    const refreshGoals = () => {
-        getGoalCategory().then(category => {
-            setGoalCategory(category);
-            setGoals(padGoals(category?.items, 3));
-        });
-    }
-
-    const getGoalCategoryId = () => {
-        return collection?.attributes?.big_goals || null;
-    }
-
-    const getGoalCategory = async () => {
-        const goalCategoryId = getGoalCategoryId();
-        return goalCategoryId
-            ? await getCategory(goalCategoryId)
-            : null;
-    }
-
-    const getGoalTasks = () => {
-        return goals.map((goalId) => tasks[goalId])
-    }
-
-    const addGoal = () => {
-        if (!goals || goals.filter(id => id).length >= 3) return; // Limit to 3 big goals
-        const lastSelectedTask = getLastSelectedTask();
-        if (!lastSelectedTask) return;
-        addTaskToCategory(goalCategory, lastSelectedTask).then(_ => refreshGoals());
-    }
+    }, [goalCategory]);
 
     return (<View style={styles.container}>
-        <ActiveGoals goals={getGoalTasks()} addGoal={addGoal} toggleDetails={toggleGoalDetails} />
+        <ActiveGoals goals={goalTasks} toggleDetails={toggleGoalDetails} />
     </View>);
 }
 

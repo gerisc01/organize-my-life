@@ -4,7 +4,7 @@ import { getCollection, getTasks } from "../api/helpers";
 import CategoryView from "../tasks/CategoryView";
 import GoalsView from "../goals/GoalsView";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import {useSharedValue} from "react-native-reanimated";
+import {runOnJS, useSharedValue} from "react-native-reanimated";
 
 const PhoneView = () => {
     const [collection, setCollection] = useState({});
@@ -17,9 +17,9 @@ const PhoneView = () => {
         .onEnd((event) => {
             if (Math.abs(event.velocityX) > 500) { // Only trigger on faster swipes
                 if (event.velocityX > 0) {
-                    setContentView('tasks');
+                    runOnJS(setContentView)('tasks');
                 } else {
-                    setContentView('goals');
+                    runOnJS(setContentView)('goals');
                 }
             }
         });
@@ -36,16 +36,6 @@ const PhoneView = () => {
         getTasks(collection).then(data => setTasks(data || {}));
     }
 
-    const getLastSelectedTask = () => {
-        return tasks[lastSelectedTask.value] || null;
-    }
-
-    const onLastSelectedTaskChanged = (lastTaskId) => {
-        if (lastSelectedTask.value !== lastTaskId) {
-            lastSelectedTask.value = lastTaskId;
-        }
-    };
-
     const toggleMainContent = () => {
         setContentView(prevView => prevView === 'tasks' ? 'goals' : 'tasks');
     }
@@ -55,13 +45,11 @@ const PhoneView = () => {
             <View style={styles.homeScreen}>
                 {contentView === 'goals' && (
                     <GoalsView phoneView={true} collection={collection} tasks={tasks}
-                               refreshTasks={() => refreshTasks()}
-                               getLastSelectedTask={getLastSelectedTask}
-                               onLastSelectedTaskChanged={onLastSelectedTaskChanged}/>
+                               refreshTasks={() => refreshTasks()} />
                 )}
                 {contentView === 'tasks' && (
                     <CategoryView phoneView={true} collection={collection} tasks={tasks}
-                                  refreshTasks={() => refreshTasks()} onLastSelectedTaskChanged={onLastSelectedTaskChanged} />
+                                  refreshTasks={() => refreshTasks()} />
                 )}
             </View>
         </GestureDetector>

@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { StyleSheet } from "react-native";
-import Animated, { useSharedValue, useAnimatedScrollHandler } from "react-native-reanimated";
+import Animated, {useSharedValue, useAnimatedScrollHandler, useAnimatedRef} from "react-native-reanimated";
 
 export const DraggableList = ({ data, renderItem, itemHeight = 60, containerStyle }) => {
-    const scrollViewRef = useRef(null);
+    const scrollViewRef = useAnimatedRef(null);
     const scrollY = useSharedValue(0);
 
     const onScroll = useAnimatedScrollHandler((event) => {

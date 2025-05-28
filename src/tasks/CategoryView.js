@@ -11,13 +11,11 @@ import {
 import {Category} from "./Category";
 import {
     createNewTask, deleteAndRemoveTask,
-    editExistingTask, getCategoryTasks, getChildrenTasks,
-    getCurrentTasks,
-    getLastSelectedTask,
+    editExistingTask, getCategoryTasks, getChildrenTasks, getLastSelectedTask,
     removeTaskFromAllParents, updateTaskCompletion
 } from "./helpers";
 
-const CategoryView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChanged, phoneView, readOnly }) => {
+const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneView, readOnly }) => {
     const [categories, setCategories] = useState({});
     const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -31,20 +29,29 @@ const CategoryView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChang
         }
     }, [collection]);
 
-    const selectTask = (categoryId, taskId) => {
+    useEffect(() => {
+        if (currentTaskRef) {
+            if (selectedTasks && selectedTasks.length > 0) {
+                const selectedTask = getLastSelectedTask(selectedTasks, tasks);
+                currentTaskRef.current = selectedTask ? selectedTask : null;
+            } else {
+                currentTaskRef.current = null;
+            }
+        }
+    }, [selectedTasks]);
+
+    const selectTask = async(categoryId, taskId) => {
         const newSelectedTasks = [...selectedTasks];
         newSelectedTasks.push(taskId);
         setSelectedTasks(newSelectedTasks);
-        onLastSelectedTaskChanged(taskId);
 
         setSelectedCategory(categoryId);
     }
 
-    const unselectTasks = (unselectAll) => {
+    const unselectTasks = async(unselectAll) => {
         if (unselectAll) {
             setSelectedTasks([]);
             setSelectedCategory(null);
-            onLastSelectedTaskChanged(null);
         } else {
             const newSelectedTasks = [...selectedTasks];
             newSelectedTasks.pop();
@@ -52,7 +59,6 @@ const CategoryView = ({ collection, tasks, refreshTasks, onLastSelectedTaskChang
             if (newSelectedTasks.length === 0) {
                 setSelectedCategory(null);
             }
-            onLastSelectedTaskChanged(getLastSelectedTask(newSelectedTasks, tasks));
         }
     }
 
