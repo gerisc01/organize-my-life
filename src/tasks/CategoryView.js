@@ -181,16 +181,30 @@ const CategorySelector = ({ categories, disabledCategories, selectCategory }) =>
         return disabledCategories.includes(categoryId);
     }
     return (<View style={styles.selectorContainer}>
+        <CategoryButton key="weekly-planning" text="Weekly Planning" onPress={() => selectCategory(null)}
+                        disabled={isDisabled('weekly-planning')} />
+        <Separator />
         {Object.keys(categories).map((categoryId) => {
             const disabled = isDisabled(categoryId);
             return (
-                <Pressable style={disabled ? styles.disabledCategoryButton : styles.categoryButton} disabled={disabled}
-                           key={categoryId} onPress={() => selectCategory(categoryId)}>
-                    <Text style={styles.defaultText}>{categories[categoryId]?.name}</Text>
-                </Pressable>
+                <CategoryButton key={categoryId} text={categories[categoryId]?.name}
+                                onPress={() => selectCategory(categoryId)} disabled={disabled} />
             )
         })}
     </View>)
+}
+
+const CategoryButton = ({ text, onPress, disabled }) => {
+    return (
+        <Pressable style={disabled ? styles.disabledCategoryButton : styles.categoryButton} disabled={disabled}
+                   onPress={() => onPress()}>
+            <Text style={styles.defaultText}>{text}</Text>
+        </Pressable>
+    )
+}
+
+export const Separator = () => {
+    return <View style={styles.separator} />
 }
 
 const styles = StyleSheet.create({
@@ -227,6 +241,16 @@ const styles = StyleSheet.create({
     defaultText: {
         color: 'black',
         fontSize: 16,
+    },
+    separator: {
+        borderBottomColor: 'black',
+        borderBottomWidth: 3,
+        marginHorizontal: 5,
+        marginVertical: 10,
+        shadowColor: "white",
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        shadowOffset: {height: 1, width: 1}
     }
 });
 
