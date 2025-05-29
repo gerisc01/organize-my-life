@@ -126,12 +126,12 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
             editTask: (taskId, name) => editTask(taskId, name),
             deleteAndRemoveTask: (taskId) => deleteTask(taskId),
             toggleTaskCompletion: (taskId) => toggleTaskCompletion(taskId),
-            selectCategory: (categoryId) => setSelectedCategory(categoryId),
+            selectCategory: setSelectedCategory,
         }
     }
 
     if (phoneView) {
-        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory} selectCategory={setSelectedCategory}
+        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory}
                                  selectedTasks={selectedTasks} generateProps={generateProps} />
     } else {
         return <CategoryMainView categories={categories} selectedCategory={selectedCategory} selectedCategories={selectedCategories}

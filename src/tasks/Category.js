@@ -19,8 +19,12 @@ export const Category = ({ readOnly, category, parentTasks, tasks, reorderTasks,
         if (!parentTasks || parentTasks.length === 0) return null;
         return parentTasks[parentTasks.length - 1];
     }
+    const unselectCategoryAndTasks = () => {
+        selectCategory(null);
+        unselectTasks(true);
+    }
     return (<View style={styles.category}>
-        <Pressable onPress={() => selectCategory(null)}>
+        <Pressable onPress={() => unselectCategoryAndTasks()}>
             <Text style={styles.categoryTitle}>{category?.name}</Text>
         </Pressable>
         <View style={styles.taskScrollContainer}>
