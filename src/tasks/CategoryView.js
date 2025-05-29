@@ -40,6 +40,19 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
         }
     }, [selectedTasks]);
 
+    const changeSelectedCategoryAtIndex = async (index, categoryId) => {
+        console.log("Changing selected category at index", index, "to", categoryId);
+        if (index < 0) return;
+        const newSelectedCategories = [...selectedCategories];
+        if (index > newSelectedCategories.length) {
+            while (index > newSelectedCategories.length) {
+                newSelectedCategories.push(null);
+            }
+        }
+        newSelectedCategories[index] = categoryId;
+        setSelectedCategories(newSelectedCategories);
+    }
+
     const selectTask = async(categoryId, taskId) => {
         const newSelectedTasks = [...selectedTasks];
         newSelectedTasks.push(taskId);
@@ -122,11 +135,11 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
                                  selectedTasks={selectedTasks} generateProps={generateProps} />
     } else {
         return <CategoryMainView categories={categories} selectedCategory={selectedCategory} selectedCategories={selectedCategories}
-            selectedTasks={selectedTasks} generateProps={generateProps} />
+            selectedTasks={selectedTasks} changeSelectedCategoryAtIndex={changeSelectedCategoryAtIndex} generateProps={generateProps} />
     }
 }
 
-const CategoryMainView = ({ categories, selectedCategory, selectedCategories, selectedTasks, generateProps }) => {
+const CategoryMainView = ({ categories, selectedCategory, selectedCategories, selectedTasks, changeSelectedCategoryAtIndex, generateProps }) => {
     if (selectedTasks?.length > 0) {
         const category = categories[selectedCategory];
         if (!category) return null;
@@ -135,10 +148,17 @@ const CategoryMainView = ({ categories, selectedCategory, selectedCategories, se
         </View>)
     } else {
         return (<View style={styles.container}>{
-            selectedCategories.map(categoryId => {
+            selectedCategories.map((categoryId, index) => {
                 const category = categories[categoryId];
-                if (!category) return null;
-                return (<Category key={categoryId} {...generateProps(category)} />);
+                if (!category) {
+                    return (<View style={styles.multiSelectorContainer} key={`selector-${index}`}>
+                        <CategorySelector categories={categories} disabledCategories={selectedCategories}
+                                             selectCategory={(cid) => changeSelectedCategoryAtIndex(index, cid)} />
+                    </View>)
+                }
+                // selectCategory needs to be after generateProps to make sure it overrides the default selectCategory
+                return (<Category key={categoryId} {...generateProps(category)}
+                              selectCategory={(cid) => changeSelectedCategoryAtIndex(index, cid)} />);
             })
         }</View>)
     }
@@ -155,11 +175,17 @@ const CategoryPhoneView = ({ categories, selectCategory, selectedCategory, selec
     }
 }
 
-const CategorySelector = ({ categories, selectCategory }) => {
+const CategorySelector = ({ categories, disabledCategories, selectCategory }) => {
+    const isDisabled = (categoryId) => {
+        if (!disabledCategories || disabledCategories.length === 0) return false;
+        return disabledCategories.includes(categoryId);
+    }
     return (<View style={styles.selectorContainer}>
         {Object.keys(categories).map((categoryId) => {
+            const disabled = isDisabled(categoryId);
             return (
-                <Pressable style={styles.categoryButton} key={categoryId} onPress={() => selectCategory(categoryId)}>
+                <Pressable style={disabled ? styles.disabledCategoryButton : styles.categoryButton} disabled={disabled}
+                           key={categoryId} onPress={() => selectCategory(categoryId)}>
                     <Text style={styles.defaultText}>{categories[categoryId]?.name}</Text>
                 </Pressable>
             )
@@ -178,6 +204,18 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: 'column',
     },
+    multiSelectorContainer: {
+        flex: 0.5,
+        marginTop: 15,
+    },
+    disabledCategoryButton: {
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'black',
+        margin: 5,
+        borderRadius: 5,
+        backgroundColor: 'lightgrey',
+    },
     categoryButton: {
         padding: 10,
         borderWidth: 1,
@@ -188,7 +226,7 @@ const styles = StyleSheet.create({
     },
     defaultText: {
         color: 'black',
-        fontSize: 20,
+        fontSize: 16,
     }
 });
 
