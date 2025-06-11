@@ -6,6 +6,9 @@ import {Category} from "../tasks/Category";
 import {padGoals} from "./helpers";
 import {GoalNextSteps} from "./GoalNextSteps";
 import CategoryView from "../tasks/CategoryView";
+import {GoalSelector} from "../common/CategorySelectors";
+import {PlusButton} from "../common/ListButtons";
+import {GoalAddNew} from "../common/ItemSelectors";
 
 const GoalsView = ({ collection, tasks, goalCategory, refreshGoals, refreshTasks, phoneView }) => {
     const [goals, setGoals] = useState([]);
@@ -78,43 +81,6 @@ const GoalsView = ({ collection, tasks, goalCategory, refreshGoals, refreshTasks
     }
 }
 
-const GoalSelector = ({ tasks, goalIds, selectGoal, setSelectingNewGoal }) => {
-    return (<View style={styles.selectorContainer}>
-        {goalIds.map((goalId, index) => {
-            const goalTask = tasks[goalId];
-            if (!goalTask) {
-                return (
-                    <Pressable style={styles.newGoalButton} key={`empty${index}`} onPress={() => setSelectingNewGoal(true)}>
-                        <Text>Add a new goal</Text>
-                    </Pressable>
-                )
-            } else {
-                return (
-                    <Pressable style={styles.goalButton} key={goalId} onPress={() => selectGoal(goalId)}>
-                        <Text>{tasks[goalId]?.name}</Text>
-                    </Pressable>
-                )
-            }
-        })}
-    </View>)
-}
-
-const GoalAddNew = ({ collection, tasks, refreshTasks, addGoal, setSelectingNewGoal }) => {
-    const currentTaskRef = useRef(null);
-    return (<View style={styles.selectorContainer}>
-        <Pressable onPress={() => setSelectingNewGoal(false)}>
-            <Text style={styles.selectorHeader}>Select a new goal</Text>
-        </Pressable>
-        <Separator />
-        <CategoryView phoneView={true} readOnly={true} collection={collection} tasks={tasks}
-                      currentTaskRef={currentTaskRef} refreshTasks={refreshTasks} />
-        <Separator />
-        <Pressable onPress={() => addGoal(currentTaskRef.current)}>
-            <Text style={styles.addGoalButton}>Add goal</Text>
-        </Pressable>
-    </View>)
-}
-
 const GoalsMainView = ({ goals, tasks, setSelectingNewGoal, generateProps }) => {
     return (<View style={styles.container}>{
         goals.map((goalId, index) => {
@@ -122,22 +88,10 @@ const GoalsMainView = ({ goals, tasks, setSelectingNewGoal, generateProps }) => 
             if (goalTask) {
                 return (<GoalNextSteps key={goalTask.id} {...generateProps(index, goalTask)} />);
             } else {
-                return <GoalPlusButton key={`empty${index}`} onPress={() => setSelectingNewGoal(true)} />
+                return <PlusButton key={`empty${index}`} onPress={() => setSelectingNewGoal(true)} />
             }
         })
     }</View>)
-}
-
-const GoalPlusButton = ({ onPress }) => {
-    return (
-        <Pressable onPress={onPress} style={styles.goalPlusButton}>
-            <Text style={styles.goalPlusButtonText}>+</Text>
-        </Pressable>
-    );
-}
-
-export const Separator = () => {
-    return <View style={styles.separator} />
 }
 
 const styles = StyleSheet.create({
@@ -150,60 +104,6 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: 'center',
     },
-    selectorContainer: {
-        flex: 1,
-        padding: 10,
-        flexDirection: 'column',
-    },
-    newGoalButton: {
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'black',
-        margin: 5,
-        borderRadius: 5,
-        backgroundColor: 'lightgreen',
-    },
-    goalButton: {
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'black',
-        margin: 5,
-        borderRadius: 5,
-    },
-    addGoalButton: {
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'black',
-        margin: 5,
-        borderRadius: 5,
-        backgroundColor: 'lightgreen',
-    },
-    goalPlusButton: {
-        height: '50%',
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'black',
-        margin: 5,
-        borderRadius: 5,
-        backgroundColor: 'lightgreen',
-        alignSelf: 'center',
-        justifyContent: 'center',
-    },
-    goalPlusButtonText: {
-        fontColor: 'grey',
-        fontWeight: 'bold',
-        fontSize: 20
-    },
-    separator: {
-        borderBottomColor: 'black',
-        borderBottomWidth: 3,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        shadowColor: "white",
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        shadowOffset: {height: 1, width: 1}
-    }
 });
 
 

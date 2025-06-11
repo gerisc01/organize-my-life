@@ -2,7 +2,7 @@ import {Pressable, StyleSheet, Text, View} from "react-native";
 import {formatDate} from "./helpers";
 import {useState} from "react";
 
-export const GoalSummary = ({ toggleDetails }) => {
+export const GoalSummaryToggle = ({ toggleDetails }) => {
     const [summaryText, setSummaryText] = useState('Expand for Details');
     const summaryPressed = () => {
         toggleDetails();
@@ -14,7 +14,7 @@ export const GoalSummary = ({ toggleDetails }) => {
     </Pressable>)
 }
 
-export const Goal = ({ goal, num }) => {
+export const HeaderGoal = ({ goal, num }) => {
     return (<View style={styles.goal}>
         <Text style={styles.goalHeader}>Goal #{num}</Text>
         {goal.completed && <Text style={styles.completedGoalText}>{goal.name}</Text>}
@@ -22,7 +22,7 @@ export const Goal = ({ goal, num }) => {
     </View>)
 }
 
-export const GoalEmpty = ({ }) => {
+export const HeaderGoalEmpty = ({ }) => {
     return (<View style={styles.emptyGoal}>
         <Text style={styles.goalText}>No Goal</Text>
         <Text style={styles.goalSummaryText}>Add in Details</Text>

@@ -14,6 +14,8 @@ import {
     editExistingTask, getCategoryTasks, getChildrenTasks, getLastSelectedTask,
     removeTaskFromAllParents, updateTaskCompletion
 } from "./helpers";
+import {Separator} from "../common/ListButtons";
+import {CategorySelector} from "../common/CategorySelectors";
 
 const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneView, readOnly }) => {
     const [categories, setCategories] = useState({});
@@ -131,7 +133,7 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
     }
 
     if (phoneView) {
-        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory}
+        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory} selectCategory={(cid) => setSelectedCategory([cid])}
                                  selectedTasks={selectedTasks} generateProps={generateProps} />
     } else {
         return <CategoryMainView categories={categories} selectedCategory={selectedCategory} selectedCategories={selectedCategories}
@@ -175,38 +177,6 @@ const CategoryPhoneView = ({ categories, selectCategory, selectedCategory, selec
     }
 }
 
-const CategorySelector = ({ categories, disabledCategories, selectCategory }) => {
-    const isDisabled = (categoryId) => {
-        if (!disabledCategories || disabledCategories.length === 0) return false;
-        return disabledCategories.includes(categoryId);
-    }
-    return (<View style={styles.selectorContainer}>
-        <CategoryButton key="weekly-planning" text="Weekly Planning" onPress={() => selectCategory(null)}
-                        disabled={isDisabled('weekly-planning')} />
-        <Separator />
-        {Object.keys(categories).map((categoryId) => {
-            const disabled = isDisabled(categoryId);
-            return (
-                <CategoryButton key={categoryId} text={categories[categoryId]?.name}
-                                onPress={() => selectCategory(categoryId)} disabled={disabled} />
-            )
-        })}
-    </View>)
-}
-
-const CategoryButton = ({ text, onPress, disabled }) => {
-    return (
-        <Pressable style={disabled ? styles.disabledCategoryButton : styles.categoryButton} disabled={disabled}
-                   onPress={() => onPress()}>
-            <Text style={styles.defaultText}>{text}</Text>
-        </Pressable>
-    )
-}
-
-export const Separator = () => {
-    return <View style={styles.separator} />
-}
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -242,16 +212,6 @@ const styles = StyleSheet.create({
         color: 'black',
         fontSize: 16,
     },
-    separator: {
-        borderBottomColor: 'black',
-        borderBottomWidth: 3,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        shadowColor: "white",
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        shadowOffset: {height: 1, width: 1}
-    }
 });
 
 

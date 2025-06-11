@@ -1,8 +1,7 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React, {useEffect} from "react";
-import {Goal, GoalEmpty, GoalSummary} from "./Goal";
+import {HeaderGoal, HeaderGoalEmpty, GoalSummaryToggle} from "./HeaderGoals";
 import {addTaskToCategory, getCategories, getCategory, getDefaultSelectedCategories} from "../api/helpers";
-import ActiveGoals from "./ActiveGoals";
 import {padGoals} from "./helpers";
 
 const GoalsHeaderView = ({ collection, tasks, goalCategory, toggleGoalDetails }) => {
@@ -17,7 +16,23 @@ const GoalsHeaderView = ({ collection, tasks, goalCategory, toggleGoalDetails })
     }, [goalCategory]);
 
     return (<View style={styles.container}>
-        <ActiveGoals goals={goalTasks} toggleDetails={toggleGoalDetails} />
+        <ActiveGoalsHeader goals={goalTasks} toggleDetails={toggleGoalDetails} />
+    </View>);
+}
+
+const ActiveGoalsHeader = ({ goals, addGoal, toggleDetails }) => {
+    return (<View style={styles.container}>
+        <View style={styles.goalsSummary}>
+            <GoalSummaryToggle toggleDetails={toggleDetails} />
+        </View>
+        {goals.map((goal, index) => (
+            <View key={index} style={styles.goal}>
+                {goal
+                    ? <HeaderGoal goal={goal} num={index+1} />
+                    : <HeaderGoalEmpty />
+                }
+            </View>
+        ))}
     </View>);
 }
 

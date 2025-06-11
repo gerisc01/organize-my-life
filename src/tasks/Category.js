@@ -1,8 +1,8 @@
 import {Pressable, ScrollView, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import {CompletedTask, CreateTask, EditableTask, MoveableTask, Task, TaskCompleteToggle, TaskContainer} from "./Task";
-import {DraggableItem} from "../dnd/DraggableItem";
-import {DraggableList} from "../dnd/DraggableList";
+import {ListTitle, NavButton} from "../common/ListButtons";
+import {ListItems, ListParentItems} from "../common/List";
 
 export const Category = ({ readOnly, category, parentTasks, tasks, reorderTasks, selectTask, unselectTasks, newTask, editTask, deleteAndRemoveTask, toggleTaskCompletion, selectCategory }) => {
     const [startAdding, setStartAdding] = React.useState(false);
@@ -24,33 +24,11 @@ export const Category = ({ readOnly, category, parentTasks, tasks, reorderTasks,
         unselectTasks(true);
     }
     return (<View style={styles.category}>
-        <Pressable onPress={() => unselectCategoryAndTasks()}>
-            <Text style={styles.categoryTitle}>{category?.name}</Text>
-        </Pressable>
+        <ListTitle text={category?.name} onPress={unselectCategoryAndTasks} />
         <View style={styles.taskScrollContainer}>
-            {parentTasks?.map((parentTask, index) => (
-                <EditableTask key={index+parentTask.name} disabled={index !== parentTasks.length - 1 || readOnly} task={parentTask}
-                              onTaskUpdate={(newText) => editTask(parentTask.id, newText)}
-                              onTaskDelete={() => deleteAndRemoveTask(parentTask.id)}
-                              onTaskClose={() => setStartAdding(false)}
-                />
-            ))}
-            <DraggableList
-                data={tasks}
-                itemHeight={40}
-                renderItem={({ item, index, scrollViewRef, scrollY, itemHeight }) => (
-                    <DraggableItem
-                        key={item.id}
-                        scrollViewRef={scrollViewRef}
-                        scrollY={scrollY}
-                        itemHeight={itemHeight}
-                        onTap={() => selectTask(category.id, item.id)}
-                        onDragEnd={(movedBy) => indexMoved(index, movedBy)}
-                    >
-                        <TaskContainer task={item} />
-                    </DraggableItem>
-                )}
-            />
+            <ListParentItems readOnly={readOnly} parentTasks={parentTasks} editTask={editTask} deleteTask={deleteAndRemoveTask}
+                             closeTask={() => setStartAdding(false)} />
+            <ListItems Task={TaskContainer} selectTask={(task) => selectTask(category.id, task)} indexMoved={indexMoved} tasks={tasks} />
             {startAdding && <CreateTask onTaskCreate={(newText) => newTask(newText)} onTaskClose={() => setStartAdding(false)}/>}
             {allTasksCompleted() && parentTasks && !startAdding && <TaskCompleteToggle task={getLastParentTask()} toggleTaskCompletion={toggleTaskCompletion} />}
         </View>
@@ -60,15 +38,6 @@ export const Category = ({ readOnly, category, parentTasks, tasks, reorderTasks,
             <NavButton text="Add" onPress={() => setStartAdding(!startAdding)} disabled={readOnly} />
         </View>
     </View>);
-}
-
-const NavButton = ({ text, onPress, disabled }) => {
-    const disablePress = disabled || !onPress;
-    return (
-        <Pressable onPress={onPress} disabled={disablePress} style={disablePress ? styles.navButtonDisabled : styles.navButton}>
-            <Text>{text}</Text>
-        </Pressable>
-    );
 }
 
 const styles = StyleSheet.create({
@@ -94,16 +63,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         height: 25,
         marginHorizontal: 20,
-    },
-    navButton: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: 'black',
-    },
-    navButtonDisabled: {
-        flex: 1,
-        backgroundColor: 'lightgrey',
-        borderWidth: 1,
-        borderColor: 'black',
     },
 });
