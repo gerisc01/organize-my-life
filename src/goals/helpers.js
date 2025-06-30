@@ -14,3 +14,10 @@ export const padGoals = (goals, goalNum) => {
     }
     return result;
 }
+
+export const getWeeklyGoalsId = (collection) => {
+    if (!collection || !collection.attributes || !collection.attributes.weekly_goals) {
+        return null;
+    }
+    return collection?.attributes?.weekly_goals;
+}

@@ -15,6 +15,18 @@ export const GoalAddNew = ({ collection, tasks, refreshTasks, addGoal, setSelect
     </View>)
 }
 
+export const WeeklyGoalAddNew = ({ collection, tasks, refreshTasks, addTask, toggleAddingGoals }) => {
+    const currentTaskRef = useRef(null);
+    return (<View style={styles.selectorContainer}>
+        <ListTitle text='Select a new goal' onPress={() => toggleAddingGoals()}/>
+        <Separator />
+        <CategoryView phoneView={true} readOnly={true} collection={collection} tasks={tasks}
+                      currentTaskRef={currentTaskRef} refreshTasks={refreshTasks} />
+        <Separator />
+        <SelectItemButton text='Add goal' onPress={() => addTask(currentTaskRef.current)} />
+    </View>)
+}
+
 const styles = StyleSheet.create({
     selectorContainer: {
         flex: 1,

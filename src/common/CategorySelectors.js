@@ -2,14 +2,14 @@ import {Pressable, StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {Separator} from "./ListButtons";
 
-export const CategorySelector = ({ categories, disabledCategories, selectCategory }) => {
+export const CategorySelector = ({ weeklyGoalsCategoryId, categories, disabledCategories, selectCategory }) => {
     const isDisabled = (categoryId) => {
         if (!disabledCategories || disabledCategories.length === 0) return false;
         return disabledCategories.includes(categoryId);
     }
     return (<View style={styles.selectorContainer}>
-        <SelectorButton key="weekly-planning" text="Weekly Planning" onPress={() => selectCategory(null)}
-                        disabled={isDisabled('weekly-planning')} />
+        <SelectorButton key="weekly-planning" text="Weekly Planning" onPress={() => selectCategory(weeklyGoalsCategoryId)}
+                        disabled={isDisabled(weeklyGoalsCategoryId)} />
         <Separator />
         {Object.keys(categories).map((categoryId) => {
             const disabled = isDisabled(categoryId);
