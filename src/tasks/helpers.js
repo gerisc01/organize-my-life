@@ -1,4 +1,12 @@
-import {addChildToTask, addTaskToCategory, createTask, deleteTask, updateCategory, updateTask} from "../api/helpers";
+import {
+    addChildToTask,
+    addTaskToCategory,
+    createTask,
+    deleteTask,
+    removeTaskFromCategory,
+    updateCategory,
+    updateTask
+} from "../api/helpers";
 
 export const getLastSelectedTask = (selectedTasks, tasks) => {
     if (selectedTasks.length > 0) {

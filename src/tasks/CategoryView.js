@@ -1,9 +1,10 @@
 import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import React, {useEffect, useState} from "react";
 import {
+    addTaskToCategory,
     getCategories,
     getDefaultSelectedCategories,
-    getTasks, reorderCategoryItems,
+    getTasks, removeTaskFromCategory, reorderCategoryItems,
     reorderTaskChildren,
     updateCategory,
     updateTask
@@ -14,9 +15,15 @@ import {
     editExistingTask, getCategoryTasks, getChildrenTasks, getLastSelectedTask,
     removeTaskFromAllParents, updateTaskCompletion
 } from "./helpers";
+import {Separator} from "../common/ListButtons";
+import {CategorySelector} from "../common/CategorySelectors";
+import {WeeklyGoals} from "../goals/WeeklyGoals";
+import {getWeeklyGoalsId} from "../goals/helpers";
+import {WeeklyGoalAddNew} from "../common/ItemSelectors";
 
 const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneView, readOnly }) => {
     const [categories, setCategories] = useState({});
+    const [addingGoals, setAddingGoals] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState([]);
 
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -39,6 +46,19 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
             }
         }
     }, [selectedTasks]);
+
+    const changeSelectedCategoryAtIndex = async (index, categoryId) => {
+        console.log("Changing selected category at index", index, "to", categoryId);
+        if (index < 0) return;
+        const newSelectedCategories = [...selectedCategories];
+        if (index > newSelectedCategories.length) {
+            while (index > newSelectedCategories.length) {
+                newSelectedCategories.push(null);
+            }
+        }
+        newSelectedCategories[index] = categoryId;
+        setSelectedCategories(newSelectedCategories);
+    }
 
     const selectTask = async(categoryId, taskId) => {
         const newSelectedTasks = [...selectedTasks];
@@ -74,6 +94,25 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
         refreshTasks();
     }
 
+    const addTask = async (categoryId, task) => {
+        const category = categories[categoryId];
+        let taskId = task && task.id ? task.id : task;
+        const selectedTask = tasks[taskId];
+        if (!selectedTask || !category) return;
+        await addTaskToCategory(category, selectedTask);
+        refreshTasks();
+    }
+
+    const removeTask = async (categoryId, taskId) => {
+        const category = categories[categoryId];
+        const task = tasks[taskId];
+        await removeTaskFromCategory(category, task);
+        // Remove the task from the selected tasks
+        const newSelectedTasks = selectedTasks.filter(selectedId => selectedId !== taskId);
+        setSelectedTasks(newSelectedTasks);
+        refreshTasks();
+    }
+
     const deleteTask = async (taskId) => {
         const task = tasks[taskId];
         await deleteAndRemoveTask(task, categories, tasks);
@@ -99,72 +138,115 @@ const CategoryView = ({ collection, tasks, refreshTasks, currentTaskRef, phoneVi
         refreshTasks();
     }
 
+    const toggleAddingGoals = (categoryId) => {
+        setSelectedTasks([]);
+        if (addingGoals) {
+            setSelectedCategory(null);
+            setAddingGoals(false);
+        } else {
+            setSelectedCategory(categoryId);
+            setAddingGoals(true);
+        }
+    }
+
+    const isWeeklyGoals = (category) => {
+        const weeklyGoalsCategoryId = getWeeklyGoalsId(collection);
+        return category && weeklyGoalsCategoryId && category.id === weeklyGoalsCategoryId;
+    }
+
+    const getCategoryType = (category) => {
+        let type = 'standard';
+        if (addingGoals) {
+            type = 'adding-goals';
+        } else if (isWeeklyGoals(category)) {
+            type = 'weekly-goals';
+        }
+        return type;
+    }
+
     const generateProps = (category) => {
         const parentTask = getLastSelectedTask(selectedTasks, tasks);
         return {
             readOnly: !!readOnly,
             category: category,
+            collection: collection,
+            tasksMap: tasks,
             tasks: parentTask ? getChildrenTasks(parentTask, tasks) : getCategoryTasks(category, tasks),
             parentTasks: parentTask ? selectedTasks.map(selectedId => tasks[selectedId]) : null,
+            refreshTasks: refreshTasks,
             selectTask: selectTask,
             unselectTasks: unselectTasks,
             reorderTasks: reorderTasks,
             newTask: (name) => newTask(category.id, name),
+            addTask: (task) => addTask(category.id, task).then(_ => toggleAddingGoals(category.id)),
             editTask: (taskId, name) => editTask(taskId, name),
+            removeTask: (taskId) => removeTask(category.id, taskId),
             deleteAndRemoveTask: (taskId) => deleteTask(taskId),
             toggleTaskCompletion: (taskId) => toggleTaskCompletion(taskId),
-            selectCategory: (categoryId) => setSelectedCategory(categoryId),
+            toggleAddingGoals: (categoryId) => toggleAddingGoals(categoryId),
+            selectCategory: setSelectedCategory,
         }
     }
 
     if (phoneView) {
-        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory} selectCategory={setSelectedCategory}
-                                 selectedTasks={selectedTasks} generateProps={generateProps} />
+        return <CategoryPhoneView categories={categories} selectedCategory={selectedCategory} selectCategory={(cid) => setSelectedCategory([cid])}
+                                 selectedTasks={selectedTasks} weeklyGoalsCategoryId={getWeeklyGoalsId(collection)} getCategoryType={getCategoryType}
+                                  generateProps={generateProps} />
     } else {
         return <CategoryMainView categories={categories} selectedCategory={selectedCategory} selectedCategories={selectedCategories}
-            selectedTasks={selectedTasks} generateProps={generateProps} />
+            selectedTasks={selectedTasks} changeSelectedCategoryAtIndex={changeSelectedCategoryAtIndex}
+            addingGoals={addingGoals} weeklyGoalsCategoryId={getWeeklyGoalsId(collection)} getCategoryType={getCategoryType}
+            generateProps={generateProps} />
     }
 }
 
-const CategoryMainView = ({ categories, selectedCategory, selectedCategories, selectedTasks, generateProps }) => {
-    if (selectedTasks?.length > 0) {
+const CategoryMainView = ({ categories, selectedCategory, selectedCategories, selectedTasks, changeSelectedCategoryAtIndex, weeklyGoalsCategoryId, getCategoryType, generateProps }) => {
+    if (selectedCategory) {
         const category = categories[selectedCategory];
         if (!category) return null;
         return (<View style={styles.container}>
-            <Category key={category.id} {...generateProps(category)} />
+            <CategoryByType key={`${category.id}-singleView`} type={getCategoryType(category)} {...generateProps(category)} />
         </View>)
     } else {
         return (<View style={styles.container}>{
-            selectedCategories.map(categoryId => {
+            selectedCategories.map((categoryId, index) => {
                 const category = categories[categoryId];
-                if (!category) return null;
-                return (<Category key={categoryId} {...generateProps(category)} />);
+                if (!category) {
+                    return (<View style={styles.multiSelectorContainer} key={`selector-${index}`}>
+                        <CategorySelector weeklyGoalsCategoryId={weeklyGoalsCategoryId} categories={categories} disabledCategories={selectedCategories}
+                                             selectCategory={(cid) => changeSelectedCategoryAtIndex(index, cid)} />
+                    </View>)
+                }
+                // selectCategory needs to be after generateProps to make sure it overrides the default selectCategory
+                return (<CategoryByType key={category.id} type={getCategoryType(category)} {...generateProps(category)}
+                    selectCategory={(cid) => changeSelectedCategoryAtIndex(index, cid)} />);
             })
         }</View>)
     }
 }
 
-const CategoryPhoneView = ({ categories, selectCategory, selectedCategory, selectedTasks, generateProps }) => {
+const CategoryPhoneView = ({ categories, selectCategory, selectedCategory, selectedTasks, weeklyGoalsCategoryId, getCategoryType, generateProps }) => {
     const category = categories[selectedCategory];
     if (!category) {
-        return (<CategorySelector categories={categories} selectCategory={selectCategory} />)
+        return (<CategorySelector weeklyGoalsCategoryId={weeklyGoalsCategoryId} categories={categories} selectCategory={selectCategory} />)
     } else {
         return (<View style={styles.container}>
-            <Category key={category.id} {...generateProps(category)} />
+            <CategoryByType key={category.id} type={getCategoryType(category)} {...generateProps(category)} />;
         </View>)
     }
 }
 
-const CategorySelector = ({ categories, selectCategory }) => {
-    return (<View style={styles.selectorContainer}>
-        {Object.keys(categories).map((categoryId) => {
-            return (
-                <Pressable style={styles.categoryButton} key={categoryId} onPress={() => selectCategory(categoryId)}>
-                    <Text style={styles.defaultText}>{categories[categoryId]?.name}</Text>
-                </Pressable>
-            )
-        })}
-    </View>)
+const CategoryByType = ({ type, ...props}) => {
+    switch (type) {
+        case 'standard':
+            return <Category {...props} />;
+        case 'weekly-goals':
+            return <WeeklyGoals {...props} />;
+        case 'adding-goals':
+            return <WeeklyGoalAddNew {...props} tasks={props.tasksMap} />;
+        default:
+            return <Category {...props} />;
+    }
 }
 
 const styles = StyleSheet.create({
@@ -178,6 +260,18 @@ const styles = StyleSheet.create({
         padding: 10,
         flexDirection: 'column',
     },
+    multiSelectorContainer: {
+        flex: 0.5,
+        marginTop: 15,
+    },
+    disabledCategoryButton: {
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'black',
+        margin: 5,
+        borderRadius: 5,
+        backgroundColor: 'lightgrey',
+    },
     categoryButton: {
         padding: 10,
         borderWidth: 1,
@@ -188,8 +282,8 @@ const styles = StyleSheet.create({
     },
     defaultText: {
         color: 'black',
-        fontSize: 20,
-    }
+        fontSize: 16,
+    },
 });
 
 

@@ -1,6 +1,7 @@
 import axios from "axios";
 import {loadObject, listCollectionItems, createObject, updateObject, deleteObject} from "./ListsApi";
 import {getSessionApiKey} from '../login/Auth'
+import {getWeeklyGoalsId} from "../goals/helpers";
 
 /******************************************************************************
  Collections
@@ -39,10 +40,13 @@ export const getDefaultSelectedCategories = async (collection) => {
 ******************************************************************************/
 
 export const getCategories = async (collection) => {
-    const collectionLists = collection?.lists;
+    let collectionLists = collection?.lists;
     if (!collectionLists || collectionLists.length === 0) {
         throw new Error("No lists found");
     }
+    // Add attribute listIds to the collectionLists
+    const weeklyGoalsId = getWeeklyGoalsId(collection);
+    if (weeklyGoalsId) collectionLists.push(weeklyGoalsId);
     // For each collection list call listsApiGet('lists', id)
     const categories = {};
     for (const listId of collectionLists) {

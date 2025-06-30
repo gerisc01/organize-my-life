@@ -61,6 +61,7 @@ export const TaskContainer = ({ task }) => {
         </View>
     )
 }
+export const taskContainerHeight = 40;
 
 export const CompletedTask = ({ task }) => {
     return (
